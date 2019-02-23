@@ -1,0 +1,58 @@
+# 字符过滤器:HTML Strip Character Filter
+POST _analyze
+{
+  "tokenizer": "standard",
+  "char_filter": [
+    "html_strip"
+  ],
+  "text": "<p>I&apos;m so <b>happy</b>!</p>"
+}
+
+# 分解器:Standard Tokenizer标准分解器
+POST _analyze
+{
+  "tokenizer": "standard",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+
+# 词元过滤器:Lowercase Token Filter
+PUT /test_index
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_custom_analyzer": {
+          "type": "custom",
+          "tokenizer": "my-tokenizer",
+          "char_filter": ["my-char-filter"],
+          "filter": ["my-token-filter"]
+        }
+      },
+      "tokenizer": {
+        "my-tokenizer": {
+          "type": "standard"
+        }
+      },
+      "filter": {
+        "my-token-filter": {
+          "type": "lowercase"
+        }
+      },
+      "char_filter": {
+        "my-char-filter": {
+          "type": "html_strip"
+        }
+      }
+    }
+  }
+}
+
+POST /test_index/_analyze
+{
+  "analyzer": "my_custom_analyzer",
+  "text": "<p>The 2 QUICK</b> Brown-Foxes jumped over the lazy dog's bone.</p>"
+}
+
+# 在词元过滤器中我们已经使用了自定义分析器，在ElasticSearch中定义了很多内置分析器
+
+# 如果有需要可参考官方文档获取更多与分析器有关的资料:https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis.html
