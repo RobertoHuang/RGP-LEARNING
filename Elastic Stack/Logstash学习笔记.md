@@ -1,6 +1,6 @@
 # Logstash
 
-> `Logstash`是开源的服务器端数据收集管道，能够同时从多个来源采集数据、转换数据，然后将数据发送到您最喜欢的存储库中(例如`ElasticSearch`中)
+> `Logstash`是开源的服务器端数据收集管道，能够同时从多个来源采集数据、转换数据，然后将数据发送到您最喜欢的存储库中(例如`ElasticSearch`中)，本篇博客旨在帮助大家对`logstash`有个初步的认识。
 
 ## 环境安装
 
@@ -255,7 +255,7 @@
 
 - `geoip`库可以根据`IP`地址提供对应的地域信息，包括国家、省市、经纬度等等【可视化地图和区域统计】
 
-`filter`插件对事件执行中间处理，它虽然名为过滤器但是提供的不单单是过滤功能。它扩展了进入过滤器的原始数据进行复杂的逻辑处理，甚至可以无中生有的添加新的`logstash`事件到后续流程中。更多`codec`插件使用方式可参考官方文档:[filter plugins](https://www.elastic.co/guide/en/logstash/current/filter-plugins.html)
+`filter`插件对事件执行中间处理，它虽然名为过滤器但提供的不单单是过滤功能。它扩展了进入过滤器的原始数据进行复杂的逻辑处理，甚至可以无中生有的添加新的`logstash`事件到后续流程中。更多`codec`插件使用方式可参考官方文档:[filter plugins](https://www.elastic.co/guide/en/logstash/current/filter-plugins.html)
 
 #### 输出插件(output)
 
@@ -317,6 +317,8 @@
       "query": { "match_all": {} }
     }
     ```
+
+  `output`插件将事件数据发送到特定目标，更多`output`插件使用方式可参考官方文档:[output plugins](https://www.elastic.co/guide/en/logstash/current/output-plugins.html)
 
 ## `Logstash`实战
 
