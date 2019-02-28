@@ -1,6 +1,6 @@
 # ElasticSearch
 
-`ElasticSearch`是一个分布式、高性能、高可用、可伸缩的搜索和分析系统
+`ElasticSearch`是一个基于`Lucene`构建的开源、分布式、高性能、高可用、可伸缩的搜索和分析系统
 
 ## ElasticSearch安装
 
@@ -128,95 +128,4 @@
 
 ## ElasticSearch简单使用
 
-- 快速检查集群的健康状况`GET /_cat/health?v`
-
-  ```
-  epoch      timestamp cluster         status node.total node.data shards pri relo init unassign pending_tasks max_task_wait_time active_shards_percent
-  1550541522 01:58:42  roberto-cluster green           3         3      0   0    0    0        0             0                  -                100.0%
-  ```
-
-  - `green`每个索引的`primary shard`和`replica shard`都是`active`状态的
-  - `yellow`每个索引的`primary shard`都是`active`状态的，但是部分`replica shard`不是`active`状态
-  - `red`不是所有索引的`primary shard`都是`active`状态的，部分索引有数据丢失了
-
-- 索引相关操作
-
-  - 创建索引`PUT /test_index?pretty`
-  - 删除索引`DELETE /test_index?pretty`
-  - 查询索引`GET /_cat/indices?v`
-
-- 商品的`CRUD`操作`DEMO`
-
-  - 新增文档`PUT /index/type/id`
-
-    ```http
-    PUT /ecommerce/product/1
-    
-    {
-      "name": "gaolujie yagao",
-      "desc": "gaoxiao meibai",
-      "price": 30,
-      "producer": "gaolujie producer",
-      "tags": ["meibai","fangzhu"]
-    }
-    
-    {
-        "_index": "ecommerce",
-        "_type": "product",
-        "_id": "1",
-        "_version": 1,
-        "result": "created",
-        "_shards": {
-            "total": 2,
-            "successful": 2,
-            "failed": 0
-        },
-        "_seq_no": 0,
-        "_primary_term": 1
-    }
-    ```
-
-    `ElasticSearch`会自动建立`index`和`type`，不需要提前创建
-
-  - 检索文档`GET /index/type/id`
-
-    ```http
-    GET /ecommerce/product/1
-    
-    {
-        "_index": "ecommerce",
-        "_type": "product",
-        "_id": "1",
-        "_version": 2,
-        "found": true,
-        "_source": {
-            "name": "gaolujie yagao",
-            "desc": "gaoxiao meibai",
-            "price": 30,
-            "producer": "gaolujie producer",
-            "tags": ["meibai","fangzhu"]
-        }
-    }
-    ```
-
-  - 修改文档
-
-    - 重建替换文档
-
-    - 更新文档方式`POST /index/type/id/_update`
-
-      ```http
-      POST /ecommerce/product/1/_update
-      
-      {
-        "doc": {
-          "name": "jiaqiangban gaolujie yagao"
-        }
-      }
-      ```
-
-  - 删除文档`DELETE /index/type/id`
-
-    ```http
-    DELETE /ecommerce/product/1
-    ```
+其实本来是计划写一下`ElasticSearch`的操作文档的，看了很久的官方文档。但是这玩意吧骚操作实在是多(各种`API`)，如果要写博客的话得花很多时间(可能还写不明白)，想了想还是等用到的时候去查[官方文档](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)吧
