@@ -53,7 +53,7 @@
   # yum install libaio
   
   # cd /var/log/
-  # echo mysqld.log
+  # echo -> mysqld.log
   # chmod 777 mysqld.log
   # chown mysql:mysql mysqld.log
   
