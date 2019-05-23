@@ -1,11 +1,11 @@
 # MySQL
 
-- 下载安装包:[下载地址](wget http://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz)，并解压
+- 下载安装包:[下载地址](http://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz)，并解压
 
   ```shell
   # tar -zxvf mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz
   
-  # mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz mysql
+  # mv mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz mysql
   ```
 
 - 创建`mysql`用户和用户组，并授权
