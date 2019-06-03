@@ -5,7 +5,7 @@
   ```shell
   # tar -zxvf mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz
   
-  # mv mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz mysql
+  # mv mysql-5.7.20-linux-glibc2.12-x86_64 mysql
   ```
 
 - 创建`mysql`用户和用户组，并授权
