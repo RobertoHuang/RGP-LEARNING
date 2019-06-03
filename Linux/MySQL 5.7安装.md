@@ -104,7 +104,7 @@
 - 使用`service mysqld`命令启动/停止服务
 
   ```shell
-  # su - mysql
+  # su mysql
   ~ service mysqld start/stop/restart
   ```
 
