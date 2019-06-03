@@ -86,15 +86,13 @@
   ```
 
   ```sql
-  set password=password('root');
-  
   use mysql;
   
-  UPDATE `mysql`.`user` SET `Host`='%', `User`='root', `Select_priv`='Y', `Insert_priv`='Y', `Update_priv`='Y', `Delete_priv`='Y', `Create_priv`='Y', `Drop_priv`='Y', `Reload_priv`='Y', `Shutdown_priv`='Y', `Process_priv`='Y', `File_priv`='Y', `Grant_priv`='Y', `References_priv`='Y', `Index_priv`='Y', `Alter_priv`='Y', `Show_db_priv`='Y', `Super_priv`='Y', `Create_tmp_table_priv`='Y', `Lock_tables_priv`='Y', `Execute_priv`='Y', `Repl_slave_priv`='Y', `Repl_client_priv`='Y', `Create_view_priv`='Y', `Show_view_priv`='Y', `Create_routine_priv`='Y', `Alter_routine_priv`='Y', `Create_user_priv`='Y', `Event_priv`='Y', `Trigger_priv`='Y', `Create_tablespace_priv`='Y', `ssl_type`='', `ssl_cipher`='', `x509_issuer`='', `x509_subject`='', `max_questions`='0', `max_updates`='0', `max_connections`='0', `max_user_connections`='0', `plugin`='mysql_native_password', `authentication_string`='*6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9', `password_expired`='N', `password_last_changed`='2017-11-20 12:41:07', `password_lifetime`=NULL, `account_locked`='N' WHERE  (`User`='root');
+  UPDATE `mysql`.`user` SET `Host`='%', `User`='root', `Select_priv`='Y', `Insert_priv`='Y', `Update_priv`='Y', `Delete_priv`='Y', `Create_priv`='Y', `Drop_priv`='Y', `Reload_priv`='Y', `Shutdown_priv`='Y', `Process_priv`='Y', `File_priv`='Y', `Grant_priv`='Y', `References_priv`='Y', `Index_priv`='Y', `Alter_priv`='Y', `Show_db_priv`='Y', `Super_priv`='Y', `Create_tmp_table_priv`='Y', `Lock_tables_priv`='Y', `Execute_priv`='Y', `Repl_slave_priv`='Y', `Repl_client_priv`='Y', `Create_view_priv`='Y', `Show_view_priv`='Y', `Create_routine_priv`='Y', `Alter_routine_priv`='Y', `Create_user_priv`='Y', `Event_priv`='Y', `Trigger_priv`='Y', `Create_tablespace_priv`='Y', `ssl_type`='', `ssl_cipher`='', `x509_issuer`='', `x509_subject`='', `max_questions`='0', `max_updates`='0', `max_connections`='0', `max_user_connections`='0', `plugin`='mysql_native_password', `authentication_string`='*81F5E21E35407D884A6CD4A731AEBFB6AF209E1B', `password_expired`='N', `password_last_changed`='2017-11-20 12:41:07', `password_lifetime`=NULL, `account_locked`='N' WHERE  (`User`='root');
   
   flush privileges;
   ```
-
+  
 - 开机自启动
 
   ```shell
