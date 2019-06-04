@@ -1,6 +1,10 @@
 # Git
 
-- 官方中文文档:[https://www.git-scm.com/book/zh/v2](https://www.git-scm.com/book/zh/v2)
+> 官方中文文档:[https://www.git-scm.com/book/zh/v2](https://www.git-scm.com/book/zh/v2)
+>
+> `Git`是一个分布式版本控制系统，关于分布式和集中式版本控制系统的差异(略)
+>
+> `Git`和其他版本控制系统对待数据的差异:传统版本控制系统记录文件差异，`Git`记录文件快照
 
 ## 配置管理
 
@@ -29,19 +33,37 @@
 ## 常用命令
 
 ```reStructuredText
+git init <repository name> 初始化Git仓库
+
 git add <file> 将文件添加到暂存区
 git commit -m <message> 提交暂存区修改
+
 git reset HEAD <file> 将之前添加到暂存区的内容从暂存区移除到工作区
 git checkout -- <file> 丢弃掉相对于暂存区中最后一次添加的文件内容所做的变更
+
 git commit --amend -m <message> 修改最后一次提交信息
 git log [-n] [--oneline] [--graph] 以图形化方式展示提交历史记录
 ```
 
-## .gitignore文件
+## 忽略某些文件
 
-关于`.gitignore`配置文件是用于不需要加入版本管理的文件
+- `.gitignore`文件
 
-配置好该文件可以为我们的版本管理带来很大的便利，关于`.gitignore`文件配置规则可执行查阅资料获取
+  适用于如果一个`.gitignore`规则应该被`Git`追踪，或者希望别人`clone`仓库后这些规则也生效
+
+- `.git/info/exclude`文件
+
+  适用于只想规则在某一个仓库中生效，但是不需要共享给其他用户，则可以修改`.git/info/exclude`文件
+
+- `core.excludesFile`环境变量
+
+  ```reStructuredText
+  $ touch ~/.gitignore 
+  $ git config --global core.excludesFile ~/.gitignore 
+  在用户目录下面创建一个文件`.gitignore`，其实路径和文件名可以自选。配置变量`core.excludesFile`
+  ```
+
+  适用于你想某个规则对所有仓库都生效并且不需要共享给其他用户，则可以配置变量`core.excludesFile`
 
 ## 分支管理相关命令
 

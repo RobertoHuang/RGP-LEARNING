@@ -110,17 +110,35 @@ git revert <commit id>              // 撤销指定commit id这次提交
 
 ## 附录
 
-为了理解好`Git Reset`需要先对`Git`三棵树的概念有所了解，关于三棵树的概念可执行百度查阅
+### Head
 
-- `git reset --soft`
+> 在`Git`中`Head`是一直指向当前分支的最新的`commit`，即使当前分支是一个游离的分支
 
-  ![git reset --soft](https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Git/images/git%20reset%20--soft.png)
+### Git Reset
 
-- `git reset --mixed`
+> 为了理解好`Git Reset`需要先对`Git`三棵树的概念有所了解，关于三棵树的概念可执行百度查阅
 
-  ![git reset --mixed](https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Git/images/git%20reset%20--mixed.png)
+- `git reset [ –soft | –mixed | –hard] [commit id] [--] [file]`版本回退
 
-- `git reset --hard`
+  ```reStructuredText
+  soft:将仓库的修改丢弃
+  mixed:将仓库和暂存区的修改丢弃
+  hard:将仓库、暂存区和工作区的修改都丢弃
+  
+  如果<commit id>未指定默认为Head
+  如果[ –soft | –mixed | –hard]未指定默认为–mixed
+  ```
 
-  ![git reset --hard](https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Git/images/git%20reset%20--hard.png)
+  - `git reset --soft`
 
+    ![git reset --soft](https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Git/images/git%20reset%20--soft.png)
+
+  - `git reset --mixed`
+
+    ![git reset --mixed](https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Git/images/git%20reset%20--mixed.png)
+
+  - `git reset --hard`
+
+    ![git reset --hard](https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Git/images/git%20reset%20--hard.png)
+
+- `git reset`常见使用场景【取消暂存、版本回退、合并多个提交】
