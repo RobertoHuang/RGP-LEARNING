@@ -137,3 +137,7 @@ public class SigarUtils {
   	who            - Show who is logged on
   ```
 
+## 附录
+
+关于`Sigar`如何使用比较优雅可以参考阿里开源的`Dubbo Metrics`。`Dubbo Metrics`采集机器指标使用了`Sigar`
+
