@@ -68,8 +68,8 @@
 $ sudo gitlab-runner register \
   --non-interactive \
   --executor "shell" \
-  --url "[Gitlab服务地址 对应上图红框上内容]" \
-  --registration-token "[项目对应的TOKEN, 对应上图红框内容]" \
+  --url "[Gitlab服务地址 对应上图红框1中内容]" \
+  --registration-token "[项目对应的TOKEN, 对应上图红框2中内容]" \
   --description "[描述, 例如: my description]" \
   --tag-list "[标签列表, 多个逗号隔开, 例如: commdoc-runner-tag-1]"
 ```
