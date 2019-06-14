@@ -122,3 +122,18 @@ git diff HEAD 比较的是最新的提交与工作区之间的区别
 git diff --cached 比较的是最新的提交与暂存区之间的差别
 ```
 
+## 附录
+
+- `GitBash`中文乱码问题解决
+
+  `打开GitBash -> 窗口右键 -> Options -> Text`
+
+  `将Locale(改成zh_CN) Character set改为GBK`，退出再打开`GitBash`即可
+
+- `Git Status`中文乱码问题解决，添加如下配置
+
+  ```reStructuredText
+  git config --global core.quotepath false
+  ```
+
+  
