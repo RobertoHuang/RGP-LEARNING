@@ -237,6 +237,12 @@ $ sudo gitlab-runner register \
   [跳转应用信息设计](RGP-MESSAGE/02.design-document/application_information_design.md)
   ```
 
+## 文档服务效果图
+
+![文档服务效果图1](https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Others/images/%E6%96%87%E6%A1%A3%E6%9C%8D%E5%8A%A1%E6%95%88%E6%9E%9C%E5%9B%BE1.png)
+
+![文档服务效果图2](https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Others/images/%E6%96%87%E6%A1%A3%E6%9C%8D%E5%8A%A1%E6%95%88%E6%9E%9C%E5%9B%BE2.png)
+
 ## 附录
 
 - 参考文档:
