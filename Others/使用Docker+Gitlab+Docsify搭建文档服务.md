@@ -62,7 +62,7 @@
 
     ![runner-setting](<https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Others/images/runner-setting.png>)
 
-    **注意:**上图红框中的内容`TOKEN`在下一步注册`Runner`会用到
+    **注意:** 上图红框中的内容`TOKEN`在下一步注册`Runner`会用到
 
 ## 将Runner注册到项目中
 
@@ -84,7 +84,7 @@ $ sudo gitlab-runner register \
 
 可以点击上图中的红框所示编辑按钮，对`Runner`进行编辑(修改`description，tags`等..)
 
-**注意:**注册`Runner`时，`tag`很重要，后续的步骤会用到
+**注意:** 注册`Runner`时，`tag`很重要，后续的步骤会用到
 
 ## Docsify项目准备
 
@@ -133,7 +133,7 @@ $ sudo gitlab-runner register \
       - tag1
   ```
 
-  注意:需要特别注意修改`tags`对应的内容，如下所示
+  **注意:** 需要特别注意修改`tags`对应的内容，如下所示
 
   ```yaml
   ...
@@ -178,7 +178,7 @@ $ sudo gitlab-runner register \
 
 ![pipelines.png](<https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Others/images/pipelines.png>)
 
-`Pipelines`完成后，访问虚拟机`IP`(8080端口)，查看文档是否生成。**注意：**首次集成如果失败，直接**Retry**
+`Pipelines`完成后，访问虚拟机`IP`(8080端口)，查看文档是否生成。**注意:** 首次集成如果失败，直接**Retry** 
 
 ## Docsify文档说明
 
