@@ -215,8 +215,6 @@
 
     看下扫描工具的实现拿`StaticScannerFileMgrImpl`举例
 
-    
-
   - `disconfCoreProcessorList`包含两种处理器
 
     `DisconfFileCoreProcessorImpl`和`DisconfItemCoreProcessorImpl`
@@ -244,11 +242,10 @@
     }
     ```
 
-    
-
   - 
 
 - `DisconfStoreProcessor`
+
   - 
 
 - `DisconfFileTypeProcessor`配置处理器
@@ -260,3 +257,76 @@
   > - `DisconfPropertiesProcessorImpl`支持读取Properties文件
   >
   > 根据配置项的类型和文件路径，读取配置文件值到`Map`，目前只支持`properties`文件
+
+
+
+- `NodeWatcher`对`ZK`节点进行监听
+
+  如果配置`disconf.enable.remote.conf`为`true`，`disconf`会监听远端文件变化来更新本地配置
+
+  监听远程文件变化是通过`NodeWatcher`完成的，`NodeWatcher`是`zookeeper api`接口`Watch`的实现
+
+  当`NodeWatcher`监听到节点数据变化时会执行回调函数执行`DisconfSysUpdateCallback#reload`方法
+
+  而`reload()`方法会调用`disconfCoreMgr`的`updateOneConfAndCallback()`方法
+
+- 
+
+
+
+------------------------------------------------------------
+
+
+
+## 第二次扫描
+
+第二次扫描的`XML`配置如下
+
+```xml
+<bean id="disconfMgrBean2" class="com.baidu.disconf.client.DisconfMgrBeanSecond" init-method="init" destroy-method="destroy"></bean>
+```
+
+在`DisconfMgrBeanSecond#init`会调用`DisconfMgr#secondScan`
+
+```java
+protected synchronized void secondScan() {
+    // ...
+    try {
+        // 扫描回调函数
+        if (scanMgr != null) {
+            scanMgr.secondScan();
+        }
+
+        // 注入数据至配置实体中
+        // 获取数据/注入/Watch
+        if (disconfCoreMgr != null) {
+            disconfCoreMgr.inject2DisconfInstance();
+        }
+    } catch (Exception e) {
+        LOGGER.error(e.toString(), e);
+    }
+    isSecondInit = true;
+}
+```
+
+第二次扫描的主要处理逻辑如下
+
+```java
+// 将回调函数实例化并写入仓库
+ScanDynamicStoreAdapter.scanUpdateCallbacks(scanModel, registry);
+```
+
+`ScanDynamicStoreAdapter`是动态扫描与`Store`模块的转换器。下面主要对回调函数的处理
+
+```java
+// ScanStaticModel是第一次扫描结束得到的静态配置存储的对象
+public static void scanUpdateCallbacks(ScanStaticModel scanModel, Registry registry) {
+    // 扫描出来
+    ScanDynamicModel scanDynamicModel = analysis4DisconfUpdate(scanModel, registry);
+
+    // 写到仓库中
+    transformUpdateService(scanDynamicModel.getDisconfUpdateServiceInverseIndexMap());
+    transformPipelineService(scanDynamicModel.getDisconfUpdatePipeline());
+}
+```
+
