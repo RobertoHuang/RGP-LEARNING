@@ -58,24 +58,8 @@ public class SigarUtils {
     private static volatile Sigar sigar;
 
     static {
-        // Linux MacOS分隔符: Windows是;
-        String splitSymbol = System.getProperty("os.name", "generic").toLowerCase().contains("win") ? ";" : ":";
-
-        URL sigarURL = SigarUtils.class.getResource("/sigar");
-        if (null == sigarURL) {
-            throw new MissingResourceException("miss classpath:/sigar folder", SigarUtils.class.getName(), "classpath:/sigar");
-        } else {
-            File classPath = new File(sigarURL.getFile());
-            String oldLibPath = System.getProperty("java.library.path");
-            try {
-                // 追加库路径
-                String newLibPath = oldLibPath + splitSymbol + classPath.getCanonicalPath();
-                System.setProperty("java.library.path", newLibPath);
-                log.info("set sigar java.library.path={}", newLibPath);
-            } catch (IOException e) {
-                log.error("append sigar to java.library.path error", e);
-            }
-        }
+        // sigarHome为上述/resource/sigar地址
+        System.setProperty("org.hyperic.sigar.path", sigarHome)
     }
 
     private SigarUtils() {
