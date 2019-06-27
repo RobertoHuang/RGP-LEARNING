@@ -1,3 +1,22 @@
+## maven-compiler-plugin
+
+> 使用`maven-compiler-plugin`插件可以指定项目源码的`JDK`版本，编译后的`JDK`版本，以及编码
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>${maven-compiler-plugin.version}</version>
+    <configuration>
+        <source>${jdk.version}</source>
+        <target>${jdk.version}</target>
+        <encoding>UTF-8</encoding>
+        <showWarnings>true</showWarnings>
+        <showDeprecation>true</showDeprecation>
+    </configuration>
+</plugin>
+```
+
 ## appassembler-maven-plugin
 
 > `appassembler-maven-plugin`可以自动生成跨平台的启动脚本，省去了手工写脚本的麻烦，而且还可以生成`JSW`的后台运行程序。接下来简单分析下`appassembler-maven-plugin`配置文件
