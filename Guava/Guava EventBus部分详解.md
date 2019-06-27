@@ -66,7 +66,7 @@ final void dispatchEvent(final Object event) {
                 bus.handleSubscriberException(e.getCause(), context(event));
             }
     	}
-	});
+    });
 }
 ```
 
