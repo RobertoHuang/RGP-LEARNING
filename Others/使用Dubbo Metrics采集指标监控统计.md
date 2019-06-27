@@ -32,6 +32,24 @@
   >  `Reporter`可以自定义，常见的是继承`ScheduledReporter`实现`report`逻辑
   >
   > 通过`Registry`获取指标的时候，可以通过`MetricFilter`对采集的指标进行过滤
+  
+  ```java
+  public class JvmMonitorReporter extends ScheduledReporter {
+      public static final String JVM_MONITOR_REPORTER = "jvm-monitor-reporter";
+  
+      public JvmMonitorReporter(MetricRegistry registry, MetricFilter filter, TimeUnit rateUnit, TimeUnit durationUnit) {
+          super(registry, JVM_MONITOR_REPORTER, filter, rateUnit, durationUnit);
+      }
+  
+      @Override
+      public void report(SortedMap<MetricName, Gauge> gauges, SortedMap<MetricName, Counter> counters, SortedMap<MetricName, Histogram> histograms, SortedMap<MetricName, Meter> meters, SortedMap<MetricName, Timer> timers) {
+          for (Map.Entry<MetricName, Gauge> entry : ) {
+              MetricName metricName = entry.getKey();
+              reportToOpentsdb(metricName.getKey(), metricName.getTags(), System.currentTimeMillis() / 1000, entry.getValue().getValue());
+          }
+      }
+  }
+  ```
 
 ## 自定义指标
 
