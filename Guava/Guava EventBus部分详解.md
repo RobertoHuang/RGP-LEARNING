@@ -48,7 +48,7 @@ public void post(Object event) {
 >
 > `LegacyAsyncDispatcher`: `AsyncEventBus` 默认使用该分发器，内部有个全局队列保存所有事件和订阅者关系，即会对多线程发布的事件进行汇总。可能的执行结果`[a1, a2, a3, b1, b2], [a1, b2, a2, a3, b2], [a1, b2, b3, a2, a3]`。从名字来看这个事件分发器应该是要废弃掉的【感觉多此一举的派发器】
 >
-> `PerThreadQueuedDispatcher`:保证同一个线程上发送事件能够按照他们发布的顺序被分发给所有的订阅者
+> `PerThreadQueuedDispatcher`:保证同一线程上发送事件能够按照他们发布的顺序被分发给所有的订阅者，对于该派发器的说法网上文章都没能说清楚。其实它是用了两个线程变量保证了事件`A`的订阅者收到了事件进行处理过程中发布了事件`B`，它能保证事件`A`的所有观察者在事件`B`的观察者之前被执行
 
 上述三个分发器内部最终都会调用`Subscriber#dispatchEvent()`方法进行事件分发
 
