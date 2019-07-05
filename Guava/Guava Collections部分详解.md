@@ -187,3 +187,39 @@ public class FluentIterableExampleTest {
 }
 ```
 
+## Lists
+
+> 集合工具类`Lists`
+
+```java
+public class ListsExampleTest {
+    @Test
+    public void testPartition() {
+        ArrayList<String> list = Lists.newArrayList("1", "2", "3", "4");
+        List<List<String>> result = Lists.partition(list, 2);
+        assertThat(result.get(0), equalTo(Lists.newArrayList("1", "2")));
+        assertThat(result.get(1), equalTo(Lists.newArrayList("3", "4")));
+    }
+
+    @Test
+    public void testTransform() {
+        ArrayList<String> sourceList = Lists.newArrayList("Roberto", "Huang", "DreamT", "Chen");
+        assertThat(Lists.transform(sourceList, e -> e.toUpperCase()), equalTo(Lists.newArrayList("ROBERTO", "HUANG", "DREAMT", "CHEN")));
+    }
+
+    @Test
+    public void testReverse() {
+        ArrayList<String> list = Lists.newArrayList("1", "2", "3");
+        assertThat(Joiner.on(",").join(list), equalTo("1,2,3"));
+
+        List<String> result = Lists.reverse(list);
+        assertThat(Joiner.on(",").join(result), equalTo("3,2,1"));
+    }
+
+    @Test
+    public void testCartesianProduct() {
+        System.out.println(Lists.cartesianProduct(Lists.newArrayList("1", "2"), Lists.newArrayList("A", "B")));
+    }
+}
+```
+
