@@ -541,6 +541,43 @@ public class ImmutableCollectionsTest {
 > 集合工具类`Ordering`
 
 ```java
+public class OrderingExampleTest {
+    // natural 使用自然规则(如从小到大、日期先后)创建Ordering
+    // usingToString 根据排序值的ToString方法值使用natural创建Ordering
+    // from(Comparator) 根据自定义的Comparator创建Ordering
 
+    // reverser() 获取语义相反的排序器
+    // nullsFirst() 使用当前的排序器，但额外把null值排到最前面
+    // nullsLast() 使用当前的排序器，但额外把null值排到最后面
+    // compound(Comparator) 合并另外一个比较器，以处理当前排序器中的相等情况
+    // lexicographical() 基于处理类型T的排序器，返回该类型的可迭代对象Iterable<T>的排序器
+    // onResultOf(Function) 对集合中元素调用Function方法，再按返回值用当前排序器排序
+
+    // greatestOf(Iterable iterable, int k) 获取可迭代对象中最大的K个元素
+    // isOrdered(Iterable iterable) 判断可迭代对象是否已按排序器排序，允许有排序值相等的元素
+    // sortedCopy(Iterable iterable) 判断可迭代对象是否已严格按排序器排序，不允许排序值相等的元素
+    // min(E, E) 返回两个参数中最小的那个，如果相等则返回第一个参数
+    // min(E, E, E, E, E...) 返回多个参数中最小的那个，如果有超过一个参数都最小，则返回第一个最小的参数
+    // min(Iterable iterable) 返回迭代器中最小元素，如果可迭代对象中没有元素则抛出NoSuchElementException
+
+    @Test
+    public void testOrderNaturalByNullFirstOrLast() {
+        List<Integer> list = Arrays.asList(1, 8, null, 6, 4, 9, 8, 7);
+
+        Collections.sort(list, Ordering.natural().nullsFirst());
+        assertThat(list, equalTo(Lists.newArrayList(null, 1, 4, 6, 7, 8, 8, 9)));
+
+        Collections.sort(list, Ordering.natural().nullsLast());
+        assertThat(list, equalTo(Lists.newArrayList(1, 4, 6, 7, 8, 8, 9, null)));
+    }
+
+    @Test
+    public void testOrderReverse() {
+        // 按位比较
+        List list = Arrays.asList(Lists.newArrayList(3, 3), Lists.newArrayList(2, 4), Lists.newArrayList(1, 5), Lists.newArrayList(1, 6), Lists.newArrayList(2, 3));
+        Collections.sort(list, Ordering.natural().lexicographical());
+        assertThat(list, equalTo(Lists.newArrayList(Lists.newArrayList(1, 5), Lists.newArrayList(1, 6), Lists.newArrayList(2, 3), Lists.newArrayList(2, 4), Lists.newArrayList(3, 3))));
+    }
+}
 ```
 
