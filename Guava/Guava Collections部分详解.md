@@ -223,3 +223,179 @@ public class ListsExampleTest {
 }
 ```
 
+## Sets
+
+> 集合工具类`Sets`
+
+```java
+public class SetsExampleTest {
+    @Test
+    public void testCombinations() {
+        // 求集合的子集
+        Sets.combinations(Sets.newHashSet(1, 2, 3, 4), 2).forEach(System.out::println);
+    }
+
+    @Test
+    public void testCartesianProduct() {
+        // 求两个集合笛卡尔积
+        System.out.println(Sets.cartesianProduct(Sets.newHashSet(1, 2), Sets.newHashSet(3, 4)));
+    }
+
+    @Test
+    public void testDiff() {
+        // 求集合差集
+        HashSet<Integer> set1 = Sets.newHashSet(1, 2, 3);
+        HashSet<Integer> set2 = Sets.newHashSet(1, 4, 6);
+        Sets.SetView<Integer> diffResult = Sets.difference(set1, set2);
+        assertThat(diffResult, equalTo(Sets.newHashSet(2, 3)));
+    }
+
+    @Test
+    public void testIntersection() {
+        // 求集合交集
+        HashSet<Integer> set1 = Sets.newHashSet(1, 2, 3);
+        HashSet<Integer> set2 = Sets.newHashSet(1, 4, 6);
+        Sets.SetView<Integer> intersection = Sets.intersection(set1, set2);
+        assertThat(intersection, equalTo(Sets.newHashSet(2, 3)));
+    }
+
+    @Test
+    public void testUnionSection() {
+        // 求集合并集
+        HashSet<Integer> set1 = Sets.newHashSet(1, 2, 3);
+        HashSet<Integer> set2 = Sets.newHashSet(1, 4, 6);
+        Sets.SetView<Integer> union = Sets.union(set1, set2);
+        assertThat(union, equalTo(Sets.newHashSet(1, 2, 3, 4, 6)));
+    }
+}
+```
+
+## Maps
+
+> 集合工具类`Maps`
+
+```java
+public class MapsExampleTest {
+    @Test
+    public void testFilter() {
+        Map<String, String> map = Maps.asMap(Sets.newHashSet("1", "2", "3"), k -> k + "_value");
+
+        // Maps.filterEntries  Maps.filterValues同理
+        assertThat(Maps.filterKeys(map, k -> Lists.newArrayList("1", "2").contains(k)).containsKey("3"), is(false));
+    }
+
+    @Test
+    public void testDifferent() {
+        Map<String, String> map = Maps.asMap(Sets.newHashSet("1", "2", "3"), k -> k + "_value");
+        Map<String, String> map2 = Maps.asMap(Sets.newHashSet("3", "4", "5"), k -> k + "_value");
+        MapDifference<String, String> difference = Maps.difference(map, map2);
+        assertThat(difference.entriesDiffering(), equalTo(Maps.newHashMap()));
+        assertThat(difference.entriesInCommon(), equalTo(Maps.asMap(Sets.newHashSet("3"), k -> k + "_value")));
+        assertThat(difference.entriesOnlyOnLeft(), equalTo(Maps.asMap(Sets.newHashSet("1", "2"), k -> k + "_value")));
+        assertThat(difference.entriesOnlyOnRight(), equalTo(Maps.asMap(Sets.newHashSet("4", "5"), k -> k + "_value")));
+    }
+
+    @Test
+    public void testTransform() {
+        Map<String, String> map = Maps.asMap(Sets.newHashSet("1", "2", "3"), k -> k + "_value");
+
+        Map<String, String> newMap = Maps.transformValues(map, v -> v + "_transform");
+
+        assertThat(newMap, equalTo(ImmutableMap.of("1", "1_value_transform", "2", "2_value_transform", "3", "3_value_transform")));
+    }
+
+    @Test
+    public void testCreate() {
+        ArrayList<String> valueList = Lists.newArrayList("1", "2", "3");
+
+        ImmutableMap<String, String> map = Maps.uniqueIndex(valueList, v -> v + "_key");
+        assertThat(map, equalTo(ImmutableMap.of("1_key", "1", "2_key", "2", "3_key", "3")));
+
+        // asMap输出可变Map
+        Map<String, String> map2 = Maps.asMap(Sets.newHashSet("1", "2", "3"), k -> k + "_value");
+        assertThat(map2, equalTo(ImmutableMap.of("1", "1_value", "2", "2_value", "3", "3_value")));
+
+        // toMap输出可变Map
+        ImmutableMap<String, String> map3 = Maps.toMap(valueList, k -> k + "_value");
+        assertThat(map3, equalTo(ImmutableMap.of("1", "1_value", "2", "2_value", "3", "3_value")));
+    }
+}
+```
+
+## BiMap
+
+> 集合工具类`BiMap`
+
+```java
+public class BiMapExampleTest {
+    @Test
+    public void testCreateAndPut() {
+        HashBiMap<String, String> hashBiMap = HashBiMap.create();
+        hashBiMap.put("1", "2");
+        hashBiMap.put("1", "3");
+        assertThat(hashBiMap.size(), equalTo(1));
+        assertThat(hashBiMap.containsKey("1"), is(true));
+        try {
+            hashBiMap.put("2", "3");
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof IllegalArgumentException);
+            assertTrue("value already present: 3".equals(e.getMessage()));
+        }
+    }
+
+    @Test
+    public void testCreateAndForcePut() {
+        HashBiMap<String, String> hashBiMap = HashBiMap.create();
+        hashBiMap.put("1", "2");
+        assertThat(hashBiMap.size(), equalTo(1));
+        assertThat(hashBiMap.containsKey("1"), is(true));
+        
+        hashBiMap.forcePut("2", "2");
+        assertThat(hashBiMap.containsKey("1"), is(false));
+        assertThat(hashBiMap.containsKey("2"), is(true));
+    }
+
+    @Test
+    public void testBiMapInverse() {
+        HashBiMap<String, String> biMap = HashBiMap.create();
+        biMap.put("1", "2");
+        biMap.put("2", "3");
+        biMap.put("3", "4");
+        assertThat(biMap.size(), equalTo(3));
+        assertThat(biMap.containsKey("1"), is(true));
+        assertThat(biMap.containsKey("2"), is(true));
+        assertThat(biMap.containsKey("3"), is(true));
+
+        BiMap<String, String> inverseKey = biMap.inverse();
+        assertThat(inverseKey.size(), equalTo(3));
+        assertThat(inverseKey.containsKey("2"), is(true));
+        assertThat(inverseKey.containsKey("3"), is(true));
+        assertThat(inverseKey.containsKey("4"), is(true));
+    }
+}
+```
+
+## Multimap
+
+> 集合工具类`Multimap`
+
+```java
+public class MultimapsExampleTest {
+    @Test
+    public void testBasic() {
+        HashMap<String, String> hashMap = Maps.newHashMap();
+        hashMap.put("1", "1");
+        hashMap.put("1", "2");
+        assertThat(hashMap.size(), equalTo(1));
+        assertThat(hashMap.get("1"), equalTo("2"));
+
+        LinkedListMultimap<String, String> multipleMap = LinkedListMultimap.create();
+        multipleMap.put("1", "1");
+        multipleMap.put("1", "2");
+        assertThat(multipleMap.size(), equalTo(2));
+        assertThat(multipleMap.get("1"), equalTo(Lists.newArrayList("1", "2")));
+    }
+}
+```
+
