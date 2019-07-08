@@ -399,3 +399,148 @@ public class MultimapsExampleTest {
 }
 ```
 
+## Table
+
+> 集合工具类`Table`
+
+```java
+public class TableExampleTest {
+    @Test
+    public void test() {
+        Table<String, String, String> table = HashBasedTable.create();
+        table.put("Language", "Kafka", "Scala");
+        table.put("Language", "RocketMQ", "Java");
+        table.put("Database", "Kafka", "File");
+        table.put("Database", "RocketMQ", "File");
+
+        Map<String, String> language = table.row("Language");
+        assertThat(language.containsKey("Kafka"), is(true));
+        assertThat(language.containsKey("RocketMQ"), is(true));
+        assertThat(language.get("Kafka"), equalTo("Scala"));
+        assertThat(language.get("RocketMQ"), equalTo("Java"));
+
+        Map<String, String> result = table.column("Kafka");
+        assertThat(result.containsKey("Language"), is(true));
+        assertThat(result.get("Language"), equalTo("Scala"));
+
+        Set<Table.Cell<String, String, String>> cells = table.cellSet();
+        assertThat(cells, equalTo(Sets.newHashSet(Tables.immutableCell("Language","Kafka","Scala"), Tables.immutableCell("Language","RocketMQ","Java"), Tables.immutableCell("Database","Kafka","File"), Tables.immutableCell("Database","RocketMQ","File"))));
+    }
+}
+```
+
+## Range
+
+> 工具类`Range`
+
+```java
+public class RangeExampleTest {
+    @Test
+    public void testClosedRange() {
+        // {x|a<=x<=b}
+        Range<Integer> closedRange = Range.closed(0, 9);
+        assertThat(closedRange.contains(5), is(true));
+        assertThat(closedRange.lowerEndpoint(), equalTo(0));
+        assertThat(closedRange.upperEndpoint(), equalTo(9));
+        assertThat(closedRange.contains(0), is(true));
+        assertThat(closedRange.contains(9), is(true));
+    }
+
+    @Test
+    public void testOpenRange() {
+        // {x|a<x<b}
+        Range<Integer> openRange = Range.open(0, 9);
+        assertThat(openRange.contains(5), is(true));
+        assertThat(openRange.lowerEndpoint(), equalTo(0));
+        assertThat(openRange.upperEndpoint(), equalTo(9));
+        assertThat(openRange.contains(0), is(false));
+        assertThat(openRange.contains(9), is(false));
+    }
+
+    @Test
+    public void testOpenClosedRange() {
+        // {x|a<x<=b}
+        Range<Integer> openClosedRange = Range.openClosed(0, 9);
+        assertThat(openClosedRange.contains(5), is(true));
+        assertThat(openClosedRange.lowerEndpoint(), equalTo(0));
+        assertThat(openClosedRange.upperEndpoint(), equalTo(9));
+        assertThat(openClosedRange.contains(0), is(false));
+        assertThat(openClosedRange.contains(9), is(true));
+    }
+
+    @Test
+    public void testClosedOpenRange() {
+        // {x|a<=x<b}
+        Range<Integer> closedOpen = Range.closedOpen(0, 9);
+        assertThat(closedOpen.contains(5), is(true));
+        assertThat(closedOpen.lowerEndpoint(), equalTo(0));
+        assertThat(closedOpen.upperEndpoint(), equalTo(9));
+        assertThat(closedOpen.contains(0), is(true));
+        assertThat(closedOpen.contains(9), is(false));
+    }
+
+    @Test
+    public void testOtherMethod() {
+        // (-∞..10)
+        Range<Integer> lessThanRange = Range.lessThan(10);
+        // (-∞..10]
+        Range<Integer> atMostRange = Range.atMost(10);
+
+        // (10..+∞)
+        Range<Integer> greaterThanRange = Range.greaterThan(10);
+        // [10..+∞)
+        Range<Integer> atLeastRange = Range.atLeast(10);
+
+        // (-∞..+∞)
+        Range<Integer> allRange = Range.all();
+        // (-∞..10]
+        Range<Integer> upToRange = Range.upTo(10, BoundType.CLOSED);
+        // [10..+∞)
+        Range<Integer> downToRange = Range.downTo(10, BoundType.CLOSED);
+    }
+
+    @Test
+    public void testRangeMap() {
+        RangeMap<Integer, String> gradeScale = TreeRangeMap.create();
+        gradeScale.put(Range.closed(0, 60), "E");
+        gradeScale.put(Range.closed(61, 70), "D");
+        gradeScale.put(Range.closed(71, 80), "C");
+        gradeScale.put(Range.closed(81, 90), "B");
+        gradeScale.put(Range.closed(91, 100), "A");
+        assertThat(gradeScale.get(77), equalTo("C"));
+    }
+}
+```
+
+## Immutable
+
+> 不可变集合
+
+```java
+public class ImmutableCollectionsTest {
+    @Test
+    public void testImmutableMap() {
+        Map<String, String> map = new HashMap<>() {
+            {
+                put("DreamT", "Chen");
+                put("Roberto", "Huang");
+            }
+        };
+
+        ImmutableMap<String, String> immutableMap = ImmutableMap.of("DreamT", "Chen", "Roberto", "Huang");
+
+        ImmutableMap<String, String> immutableMap2 = ImmutableMap.copyOf(map);
+
+        ImmutableMap<String, String> immutableMap3 = ImmutableMap.<String, String>builder().put("DreamT", "Chen").put("Roberto", "Huang").build();
+    }
+}
+```
+
+## Ordering
+
+> 集合工具类`Ordering`
+
+```java
+
+```
+
