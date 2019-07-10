@@ -37,8 +37,8 @@ loadingCache.getUnchecked("k1");
 
 ```java
 CacheBuilder.newBuilder()
-		// 设置并发级别为cpu核心数
-		.concurrencyLevel(Runtime.getRuntime().availableProcessors()) .build();
+        // 设置并发级别为cpu核心数
+        .concurrencyLevel(Runtime.getRuntime().availableProcessors()) .build();
 ```
 
 ## 缓存的初始容量
