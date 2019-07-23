@@ -1,5 +1,7 @@
 # ConcurrentLinkedQueue
 
+> 参考:[死磕JAVA集合之ConcurrentLinkedQueue源码分析](https://github.com/alan-tang-tt/yuan/blob/master/%E6%AD%BB%E7%A3%95%20java%E9%9B%86%E5%90%88%E7%B3%BB%E5%88%97/22.%E6%AD%BB%E7%A3%95%20java%E9%9B%86%E5%90%88%E4%B9%8BConcurrentLinkedQueue%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md)
+>
 > `ConcurrentLinkedQueue`只实现了`Queue`接口并没有实现`BlockingQueue`接口，所以它不是阻塞队列，也不能用于线程池中，但是它是线程安全的，可用于多线程环境中
 
 ## 总结
