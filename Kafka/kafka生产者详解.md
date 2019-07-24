@@ -8,12 +8,12 @@
 public class KafkaProducerTest {
     public static void main(String[] args) {
         /**
-         * 1.配置生产者客户端参数及创建响应的生产者实例
+         * 1.配置生产者客户端参数及创建相应的生产者实例
          * 2.构建待发送的消息(ProducerRecord)
          * 3.发送消息，最后关闭生产者实例
          ***/
         Properties properties = new Properties();
-        // 集群地址，多个服务器用"，"分隔
+        // 集群地址，多个服务器用",分隔
         properties.put("bootstrap.servers", "127.0.0.1:9092");
         // key、value的序列化，此处以字符串为例，使用kafka已有的序列化类
         properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
