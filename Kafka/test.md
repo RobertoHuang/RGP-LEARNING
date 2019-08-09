@@ -1,1 +1,0 @@
-<div align="center">![an image][https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Kafka/images/%E6%95%B0%E6%8D%AE%E4%B8%A2%E5%A4%B1%E5%9C%BA%E6%99%AFA.png]</div>
