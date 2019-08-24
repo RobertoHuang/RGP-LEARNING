@@ -65,3 +65,16 @@ sudo chmod +x /usr/local/bin/iterm2login.sh
 <div  align="center">    
     <img src="https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Others/images/item2%E8%AE%B0%E4%BD%8F%E5%AF%86%E7%A0%81%E9%85%8D%E7%BD%AE4.jpg" alt="item2记住密码配置4" align=center />
 </div>
+
+## 保持回话
+
+编辑或创建`~/.ssh/config`
+
+```shell
+Host *
+ServerAliveCountMax 3
+ServerAliveInterval 300
+# 3 是最多发送的次数，如果想一直保持连接，本项目可以不写
+# 300 是发给服务端心跳的间隔，单位是秒，根据你自己的服务器情况设置
+```
+
