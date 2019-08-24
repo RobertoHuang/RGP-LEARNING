@@ -60,6 +60,19 @@
   # /usr/local/mysql/bin/mysqld --initialize --user=mysql --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --lc_messages_dir=/usr/local/mysql/share --lc_messages=en_US
   ```
 
+  如果执行该命令时出现如下错误
+
+  ```shell
+  [root@VM_0_2_centos mysql]#  /usr/local/mysql/bin/mysqld --initialize --user=mysql --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --lc_messages_dir=/usr/local/mysql/share --lc_messages=en_US
+  /usr/local/mysql/bin/mysqld: error while loading shared libraries: libnuma.so.1: cannot open shared object file: No such file or directory
+  ```
+
+  解决方案为:
+
+  ```shell
+  yum -y install numactl.x86_64
+  ```
+
 - 查看初始密码
 
   ```shell
@@ -85,14 +98,27 @@
   # /usr/local/mysql/bin/mysql -uroot -p 你在上面看到的初始密码
   ```
 
-  ```sql
+- 修改初始密码
+
+  ```mysql
+  set password for root@localhost = password('root');
+  ```
+
+- 修改用户权限
+
+  ```mysql
   use mysql;
   
-  UPDATE `mysql`.`user` SET `Host`='%', `User`='root', `Select_priv`='Y', `Insert_priv`='Y', `Update_priv`='Y', `Delete_priv`='Y', `Create_priv`='Y', `Drop_priv`='Y', `Reload_priv`='Y', `Shutdown_priv`='Y', `Process_priv`='Y', `File_priv`='Y', `Grant_priv`='Y', `References_priv`='Y', `Index_priv`='Y', `Alter_priv`='Y', `Show_db_priv`='Y', `Super_priv`='Y', `Create_tmp_table_priv`='Y', `Lock_tables_priv`='Y', `Execute_priv`='Y', `Repl_slave_priv`='Y', `Repl_client_priv`='Y', `Create_view_priv`='Y', `Show_view_priv`='Y', `Create_routine_priv`='Y', `Alter_routine_priv`='Y', `Create_user_priv`='Y', `Event_priv`='Y', `Trigger_priv`='Y', `Create_tablespace_priv`='Y', `ssl_type`='', `ssl_cipher`='', `x509_issuer`='', `x509_subject`='', `max_questions`='0', `max_updates`='0', `max_connections`='0', `max_user_connections`='0', `plugin`='mysql_native_password', `authentication_string`='*81F5E21E35407D884A6CD4A731AEBFB6AF209E1B', `password_expired`='N', `password_last_changed`='2017-11-20 12:41:07', `password_lifetime`=NULL, `account_locked`='N' WHERE  (`User`='root');
+  # 查看访问权限，如果host字段里面没有一个“%”(%代表所有人都可以远程访问)
+  select user,host from user;
   
+  #【第一个root是用户名，第二个root是密码。%代表所有IP，可以设置你自己的IP】
+  GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION; 
+  
+  # 立即生效
   flush privileges;
   ```
-  
+
 - 开机自启动
 
   ```shell
@@ -106,14 +132,6 @@
   ```shell
   # su mysql
   ~ service mysqld start/stop/restart
-  ```
-
-- 远程用户建立
-
-  ```sql
-  grant all privileges on *.* to '新用户名'@'%' identified by '新密码';
-  
-  flush privileges;
   ```
 
 - 添加系统环境变量
