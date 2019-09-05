@@ -33,25 +33,277 @@
 
   - `Starting Jenkins bash: /usr/bin/java: No such file or direct`
 
-    ```
+    ```shell
     # 1.编辑Jenkins服务启动文件
     vim /etc/init.d/jenkins
     
     # 将candidates中的/usr/bin/java修改为系统的JAVA路径 如下
     /usr/local/sdkman/candidates/java/current/bin/java
     ```
+  
+- `Jenkins`系统配置文件路径为`/etc/sysconfig/jenkins`
+
+- `Jenkin`默认工作目录为`/var/lib/jenkins`
+
+- `Jenkins`的`JOB`配置转为`XML`的地址为
+
+  ```
+  {JenkinsURL}/job/{jobName}/config.xml
+  ```
 
 ## 插件安装
 
 - `Maven`项目支持:`Maven Integration`
 - 通过`SSH`发布项目:`Publish Over SSH`
 - 构建时候支持`Git`分支选择:`Git Parameter`
+- 构建`NodeJS`项目:`NodeJS`
+
+如果插件安装失败，可替换插件源`系统管理->管理插件->高级->选择升级站点`
+
+```
+http://mirror.esuni.jp/jenkins/updates/update-center.json
+```
 
 ## 权限管理
 
 <div  align="center">    
     <img src="https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Linux/images/Jenkins%E6%9D%83%E9%99%90%E9%85%8D%E7%BD%AE.png" alt="jenkins权限配置" align=center />
 </div>
+
+## Vue项目自动化部署配置
+
+- `Jenkins`配置
+
+  ```xml
+  <?xml version="1.0" encoding="utf-8"?>
+  
+  <project> 
+    <actions/>  
+    <description/>  
+    <keepDependencies>false</keepDependencies>  
+    <properties> 
+      <jenkins.model.BuildDiscarderProperty> 
+        <strategy class="hudson.tasks.LogRotator"> 
+          <daysToKeep>5</daysToKeep>  
+          <numToKeep>5</numToKeep>  
+          <artifactDaysToKeep>-1</artifactDaysToKeep>  
+          <artifactNumToKeep>-1</artifactNumToKeep> 
+        </strategy> 
+      </jenkins.model.BuildDiscarderProperty>  
+      <hudson.model.ParametersDefinitionProperty> 
+        <parameterDefinitions> 
+          <net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition plugin="git-parameter@0.9.11"> 
+            <name>BRANCH</name>  
+            <description>分支名称</description>  
+            <uuid>9a9b8ea5-5a40-4484-8572-8f3e30a43222</uuid>  
+            <type>PT_BRANCH_TAG</type>  
+            <branch/>  
+            <tagFilter>*</tagFilter>  
+            <branchFilter>.*</branchFilter>  
+            <sortMode>NONE</sortMode>  
+            <defaultValue>master</defaultValue>  
+            <selectedValue>NONE</selectedValue>  
+            <quickFilterEnabled>false</quickFilterEnabled>  
+            <listSize>5</listSize> 
+          </net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition> 
+        </parameterDefinitions> 
+      </hudson.model.ParametersDefinitionProperty> 
+    </properties>  
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@3.12.0"> 
+      <configVersion>2</configVersion>  
+      <userRemoteConfigs> 
+        <hudson.plugins.git.UserRemoteConfig> 
+          <url>https://gitee.com/roberto/live-training-font.git</url>  
+          <credentialsId>1910c253-9f97-459c-8705-7584a2eafba0</credentialsId> 
+        </hudson.plugins.git.UserRemoteConfig> 
+      </userRemoteConfigs>  
+      <branches> 
+        <hudson.plugins.git.BranchSpec> 
+          <name>$BRANCH</name> 
+        </hudson.plugins.git.BranchSpec> 
+      </branches>  
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>  
+      <submoduleCfg class="list"/>  
+      <extensions/> 
+    </scm>  
+    <canRoam>true</canRoam>  
+    <disabled>false</disabled>  
+    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>  
+    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>  
+    <triggers/>  
+    <concurrentBuild>false</concurrentBuild>  
+    <builders> 
+      <hudson.tasks.Shell> 
+        <command>npm install npm run build</command> 
+      </hudson.tasks.Shell> 
+    </builders>  
+    <publishers> 
+      <jenkins.plugins.publish__over__ssh.BapSshPublisherPlugin plugin="publish-over-ssh@1.20.1"> 
+        <consolePrefix>SSH:</consolePrefix>  
+        <delegate plugin="publish-over@0.22"> 
+          <publishers> 
+            <jenkins.plugins.publish__over__ssh.BapSshPublisher plugin="publish-over-ssh@1.20.1"> 
+              <configName>测试服务器</configName>  
+              <verbose>false</verbose>  
+              <transfers> 
+                <jenkins.plugins.publish__over__ssh.BapSshTransfer> 
+                  <remoteDirectory>live-training-front/html-new</remoteDirectory>  
+                  <sourceFiles>dist/**</sourceFiles>  
+                  <excludes/>  
+                  <removePrefix>dist/</removePrefix>  
+                  <remoteDirectorySDF>false</remoteDirectorySDF>  
+                  <flatten>false</flatten>  
+                  <cleanRemote>false</cleanRemote>  
+                  <noDefaultExcludes>false</noDefaultExcludes>  
+                  <makeEmptyDirs>false</makeEmptyDirs>  
+                  <patternSeparator>[, ]+</patternSeparator>  
+                  <execCommand>rm -rf /usr/local/live-training-front/html/* mv /usr/local/live-training-front/html-new/* /usr/local/live-training-front/html/</execCommand>  
+                  <execTimeout>120000</execTimeout>  
+                  <usePty>false</usePty>  
+                  <useAgentForwarding>false</useAgentForwarding> 
+                </jenkins.plugins.publish__over__ssh.BapSshTransfer> 
+              </transfers>  
+              <useWorkspaceInPromotion>false</useWorkspaceInPromotion>  
+              <usePromotionTimestamp>false</usePromotionTimestamp> 
+            </jenkins.plugins.publish__over__ssh.BapSshPublisher> 
+          </publishers>  
+          <continueOnError>false</continueOnError>  
+          <failOnError>false</failOnError>  
+          <alwaysPublishFromMaster>false</alwaysPublishFromMaster>  
+          <hostConfigurationAccess class="jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin" reference="../.."/> 
+        </delegate> 
+      </jenkins.plugins.publish__over__ssh.BapSshPublisherPlugin> 
+    </publishers>  
+    <buildWrappers> 
+      <jenkins.plugins.nodejs.NodeJSBuildWrapper plugin="nodejs@1.3.3"> 
+        <nodeJSInstallationName>NodeJS</nodeJSInstallationName>  
+        <cacheLocationStrategy class="jenkins.plugins.nodejs.cache.DefaultCacheLocationLocator"/> 
+      </jenkins.plugins.nodejs.NodeJSBuildWrapper> 
+    </buildWrappers> 
+  </project>
+  ```
+
+- `Nginx`配置如下
+
+  ```shell
+  #user  nobody;
+  worker_processes  1;
+  
+  #error_log  logs/error.log;
+  #error_log  logs/error.log  notice;
+  #error_log  logs/error.log  info;
+  
+  #pid        logs/nginx.pid;
+  
+  
+  events {
+      worker_connections  1024;
+  }
+  
+  http {
+      include       mime.types;
+      default_type  application/octet-stream;
+  
+      #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+      #                  '$status $body_bytes_sent "$http_referer" '
+      #                  '"$http_user_agent" "$http_x_forwarded_for"';
+  
+      #access_log  logs/access.log  main;
+  
+      sendfile        on;
+      #tcp_nopush     on;
+  
+      #keepalive_timeout  0;
+      keepalive_timeout  65;
+  
+      #gzip  on;
+  
+      server {
+          listen       80;
+          server_name  localhost;
+  
+          #charset koi8-r;
+  
+          #access_log  logs/host.access.log  main;
+  
+          location / {
+            root   /usr/local/live-training-front/html; #默认访问目录
+            index  index.html; #默认访问文件
+            try_files $uri $uri/ /index.html; #目录不存在则执行index.html
+          }
+  
+          #error_page  404              /404.html;
+  
+          # redirect server error pages to the static page /50x.html
+          #
+          error_page   500 502 503 504  /50x.html;
+          location = /50x.html {
+              root   html;
+          }
+  
+          # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+          #
+          #location ~ \.php$ {
+          #    proxy_pass   http://127.0.0.1;
+          #}
+  
+          # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+          #
+          #location ~ \.php$ {
+          #    root           html;
+          #    fastcgi_pass   127.0.0.1:9000;
+          #    fastcgi_index  index.php;
+          #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+          #    include        fastcgi_params;
+          #}
+  
+          # deny access to .htaccess files, if Apache's document root
+          # concurs with nginx's one
+          #
+          #location ~ /\.ht {
+          #    deny  all;
+          #}
+      }
+  
+  
+      # another virtual host using mix of IP-, name-, and port-based configuration
+      #
+      #server {
+      #    listen       8000;
+      #    listen       somename:8080;
+      #    server_name  somename  alias  another.alias;
+  
+      #    location / {
+      #        root   html;
+      #        index  index.html index.htm;
+      #    }
+      #}
+  
+  
+      # HTTPS server
+      #
+      #server {
+      #    listen       443 ssl;
+      #    server_name  localhost;
+  
+      #    ssl_certificate      cert.pem;
+      #    ssl_certificate_key  cert.key;
+  
+      #    ssl_session_cache    shared:SSL:1m;
+      #    ssl_session_timeout  5m;
+  
+      #    ssl_ciphers  HIGH:!aNULL:!MD5;
+      #    ssl_prefer_server_ciphers  on;
+  
+      #    location / {
+      #        root   html;
+      #        index  index.html index.htm;
+      #    }
+      #}
+  }
+  ```
+
+参考链接:[https://www.chenchen.org/2018/01/16/Jenkins_NodeJs_Vue_CI.html](https://www.chenchen.org/2018/01/16/Jenkins_NodeJs_Vue_CI.html)
 
 ## SpringBoot项目部署脚本(deploy.sh)
 
