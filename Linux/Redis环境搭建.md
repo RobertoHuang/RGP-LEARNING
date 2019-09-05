@@ -41,7 +41,9 @@
   bind 127.0.0.1 修改为 # bind 127.0.0.1
   # 进程在后台运行
   daemonize no 修改为 daemonize yes
-  # 日志输出文件等信息
+  # 修改redis登陆密码
+  requirepass 修改为指定的密码
+  # 日志输出文件等信息 如果日志目录不存在可能需要手动创建
   logfile "" 修改为指定的日志文件 logfile "/var/log/redis/6379.log"
   ```
 
