@@ -219,3 +219,53 @@
 
 详细语法介绍可参考:[Assembly Descriptor Format reference](http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html)
 
+## maven-shade-plugin
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-shade-plugin</artifactId>
+    <version>3.2.1</version>
+    <configuration>
+        <!-- 自动将所有不使用的类全部排除掉 -->
+        <minimizeJar>false</minimizeJar>
+        <createDependencyReducedPom>true</createDependencyReducedPom>
+        <!-- 表示把shade过的jar作为项目默认的包 -->
+        <shadedArtifactAttached>false</shadedArtifactAttached>
+        <!-- 当上面为属性为ture时生效 修改生成jar的后缀名 -->
+        <!-- <shadedClassifierName>jackofall</shadedClassifierName> -->
+        <artifactSet>
+            <includes>
+                <include>com.google.guava:*</include>
+                <include>com.ucarinc:loghub-core</include>
+            </includes>
+        </artifactSet>
+        <relocations>
+            <relocation>
+                <pattern>com.google</pattern>
+                <shadedPattern>com.ucarinc.loghub.com.google</shadedPattern>
+            </relocation>
+        </relocations>
+        <filters>
+            <filter>
+                <artifact>*:*</artifact>
+                <excludes>
+                    <exclude>LICENSE</exclude>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                </excludes>
+            </filter>
+        </filters>
+    </configuration>
+    <executions>
+        <execution>
+            <phase>package</phase>
+            <goals>
+                <goal>shade</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
