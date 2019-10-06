@@ -238,6 +238,51 @@ git fetch origin +refs/heads/master:refs/remotes/origin/master
   git remote prune origin
   ```
 
+## cherry-pick
+
+`cherry-pick`主要应用在本地分支上，主要用户解决本来需要添加到`A`分支的代码误添加到了`B`分支上的问题
+
+## rebase
+
+加入有两个分支分别为`A>B1>B2`和`A>C1>C2`，使用变基将`B`的修改合并到`C`分支上操作为
+
+```
+git checkout C
+git rebase B
+```
+
+该操作完成的功能是将`C`分支的改动在`B`分支上进行重播。即执行完上述命令后分支为`A>B1>B2>C1'>C2'`
+
+- `rebase`和`merge`的区别
+
+  从某种程度上来说`rebase`与`merge`可以完成类似的工作，不过两者的工作方式有着显著的区别
+
+  `rebase`会修改提交历史，一般来说执行`rebase`的分支都是自己的本地分支，没有推送到远程版本库
+
+  不要与其他人共享的分支上执行`rebase`操作【切勿在`master`分支上执行`rebase`，否则会引起很多问题】
+
+  `merge`历史一旦发生即存在事实 `rebase`着眼于现在
+
+- `rebase`过程冲突合并
+
+  - `rebase`过程中也会出现冲突
+  - 可是使用`git rebase --skip`跳过重播
+  - 也解决冲突后使用`git add`添加然后执行`git rebase --continue`
+  - 接下来`git`会继续应用余下的补丁
+  - 任何时候都可以通过如下命令终止`rebase`，分支会恢复到`rebase`开始前状态`git rebase --abort`
+
+- 使用交互式变基来合并多次提交`git rebase -i <arg>`
+
+  `-i`后参数为提交对象`ID`，比较特殊的一个参数是`origin/master`,使用`git rebase -i origin/master`，可以获取最后一次从`origin`远端仓库拉取`pull`或推送`push`之后的所有提交
+
+  - `pick(p)`，表明正在使用
+  - `reword(r)`，表明仍然使用该提交对象，但是需修改提交信息
+  - `edit(e)`，使用该提交对象，但是不合并提交对象
+  - `squash(s)`，使用该提交对象，但是将此提交与上一次提交对象合并
+  - `fixup(f)`，同squash值，但是丢失此次提交的日志信息
+  - `exec(x)`，后接特定脚本，保存后将执行该脚本
+  - `drop(d)`，移除该提交对象
+
 ## 附录
 
 - `GitBash`中文乱码问题解决
