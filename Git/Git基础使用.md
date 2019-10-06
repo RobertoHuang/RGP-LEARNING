@@ -198,8 +198,8 @@ git fetch origin +refs/heads/master:refs/remotes/origin/master
 - 设置本地分支和远程分支关联关系
 
   ```
-  git push --set-upstream origin src:dst src:本地分支 dst:远程分支
-  git push -u origin src:dst src:本地分支 dst:远程分支 这两个命令是等价的
+  git push --set-upstream origin <src>:<dst> src:本地分支 dst:远程分支
+  git push -u origin <src>:<dst> src:本地分支 dst:远程分支 这两个命令是等价的
   
   强烈建议src和dst分支名称相同
   ```
@@ -207,7 +207,7 @@ git fetch origin +refs/heads/master:refs/remotes/origin/master
 - 推送命令
 
   ```
-  git push origin src:dst src:本地分支 dst:远程分支
+  git push origin <src>:<dst> src:本地分支 dst:远程分支
   
   利用该命令可以删除远程分支，推送空分支到远程(如下删除master2分支)
   git push origin :master2
@@ -219,17 +219,17 @@ git fetch origin +refs/heads/master:refs/remotes/origin/master
 - 拉取命令
 
   ```
-  git pull origin src:dst src:远程分支 dst:本地分支 如果是合并到当前分支则可以省略dst
+  git pull origin <src>:<dst> src:远程分支 dst:本地分支 如果是合并到当前分支则可以省略dst
   
   该命令其实可以拆分成如下命令:
       1.拉取远程分支与本地的远程分支建立关系
-      git fetch origin +refs/heads/src
+      git fetch origin +refs/heads/<src>
       
       2.如果本地分支不存在，则新建并切换到本地分支
-      git checkout -b dst origin/src或者git checkout --track origin/src
+      git checkout -b <dst> origin/<src>或者git checkout --track origin/<src>
       
       3.将远程分支改动合并到本地分支
-      git merge origin/src
+      git merge origin/<src>
   ```
 
 - 删除本地远程分支(本地远程分支对应的远程分支已删除时)
