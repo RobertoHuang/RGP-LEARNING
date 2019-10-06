@@ -34,13 +34,13 @@
 
 ```reStructuredText
 git init <repository name> 初始化Git仓库
-git clone <repository url> 从远程仓库拉取
+git clone <repository url> [folder name] 从远程仓库拉取
 
 git add <file> 将文件添加到暂存区
-git rm --cache <file> 当我们需要删除暂存区或分支上的文件但本地又需要使用,只是不希望这个文件被版本控制
 git commit -m <message> 提交暂存区修改
 git checkout -- <file> 丢弃掉相对于暂存区中最后一次添加的文件内容所做的变更
 git reset HEAD <file> 将之前添加到暂存区的内容从暂存区移除到工作区
+git rm --cache <file> 当我们需要删除暂存区或分支上的文件但本地又需要使用,只是不希望这个文件被版本控制
 git commit --amend -m <message> 修改最后一次提交信息
 git log [-n] [--oneline] [--graph] 以图形化方式展示提交历史记录
 
@@ -74,7 +74,7 @@ git push 将本地分支修改推送到远程分支
 
 ```reStructuredText
 git branch <branch ame> [commit id] 创建分支
-git branch -a 显示所有分支
+git branch -av 显示所有分支 v:显示提交信息
 git branch -d <branch name> 删除分支
 git branch -D <branch name> 强制删除分支
 git branch -m <oldbranch> <newbranch> 修改分支名称
@@ -116,6 +116,10 @@ git tag 获取标签列表
 git tag <tag name> 创建标签
 git tag -a <tag name> -m <remark> 创建一个带有附注的标签
 git tag -d <tag name> 删除标签
+git show <tag name> 查看标签详细信息
+
+git push origin <srcTagName>:<dstTagName> 推送标签到远程
+git push origin :refs/tags/<tagName> 删除远程标签
 
 注:标签名称不可与分支名称重复
 ```
@@ -147,7 +151,7 @@ git diff --cached 比较的是最新的提交与暂存区之间的差别
 git remote add origin git@github.com:RobertoHuang/test.git
 ```
 
-上述命令会在 `.git/config` 文件中添加几行，并在其中指定远程版本库名称`origin`、`URL`和一个用于获取`fetch`操作的引用规格`refspec`：
+【**`origin`是`git`仓库的别名，可指定其它名称。只是约定俗成一般不建议修改**】上述命令会在 `.git/config` 文件中添加几行并在其中指定远程版本库名称`origin`、`URL`和一个用于获取`fetch`操作的引用规格`refspec`
 
 ```
 [remote "origin"]
@@ -159,15 +163,39 @@ git remote add origin git@github.com:RobertoHuang/test.git
 
 第2行:指明远程仓库的`URL`
 
-第3行:引用规格的格式由一个可选的+号和紧随其后的`<src>:<dst>`组成。其中`<src>`是一个模式`pattern`，代表远程版本库中的引用；`<dst>`是远程版本库的引用在本地所对应的位置；开头的`+`号告诉`Git`即使在不能快进的情况下也要强制更新引用
+第3行:引用规格的格式由一个可选的`+`号和紧随其后的`<src>:<dst>`组成。其中`<src>`是一个模式`pattern`，代表远程版本库中的引用；`<dst>`是远程版本库的引用在本地所对应的位置；开头的`+`号告诉`Git`即使在不能快进的情况下也要强制更新引用
 
 默认情况下引用规格由 `git remote add` 命令自动生成【无特殊情况不要进行修改】
 
 `Git`会获取服务器中`refs/heads/`下面的**所有**引用，并将它写入到本地的`refs/remotes/origin/`中
 
+所以如果远程有一个`master`分支，在本地可以通过下面的这种方式来访问他的记录
+
+```
+git log origin/master
+git log remotes/origin/master
+git log refs/remotes/origin/master
+```
+
+它们全是等价的，因为`git`会把它们都扩展成`resf/remotes/origin/master`
+
+如果你想让`git`每次拉取只拉取远程的`master`，而不是远程所有分支，你可以把`fetch`这一行修改成这样
+
+```
+fetch = +refs/heads/master:refs/remotes/origin/master
+```
+
+`git fetch`操作默认`fech`远端名称为`origin`，而如果你只想做一次该操作，也可以在命令行指定这个`refspecs`
+
+```
+git fetch origin +refs/heads/master:refs/remotes/origin/master
+```
+
+关于`refspecs`大概就介绍到这里，个人理解它主要用于绑定远程分支和本地远程分支的对应关系
+
 ## 远程协作
 
-- 设置远程分支关联关系
+- 设置本地分支和远程分支关联关系
 
   ```
   git push --set-upstream origin src:dst src:本地分支 dst:远程分支

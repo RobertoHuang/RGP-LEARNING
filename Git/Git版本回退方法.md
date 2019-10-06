@@ -19,14 +19,14 @@
 
 - 回退本地分支
 
-  ```reStructuredText
+  ```
   git reflog
   git reset --hard <commit id>
   ```
 
 - 紧接着强制推送到远程分支
 
-  ```reStructuredText
+  ```
   git push -f
   ```
 
@@ -34,13 +34,13 @@
 
 相信你已经能够回滚远程分支的版本了，那么你也许会问了，回滚公共远程分支和回滚自己的远程分支有区别吗？ 
 
-```reStructuredText
+```
 一个显而易见的问题：如果你回退公共远程分支，把别人的提交给丢掉了怎么办？
 ```
 
-假如你的远程master分支情况是这样的:`A1–A2–B1`，其中`A`、`B`分别代表两个人，`A1`、`A2`、`B1`代表各自的提交。并且所有人的本地分支都已经更新到最新版本，和远程分支一致。这个时候你发现`A2`这次提交有错误，你用`reset`回滚远程分支`master`到`A1`，那么理想状态是你的队友一拉代码`git pull`，他们的`master`分支也回滚了，然而现实却是，你的队友会看到下面的提示：
+假如你的远程`master`分支情况是这样的:`A1–A2–B1`，其中`A`、`B`分别代表两个人，`A1`、`A2`、`B1`代表各自的提交。并且所有人的本地分支都已经更新到最新版本，和远程分支一致。这个时候你发现`A2`这次提交有错误，你用`reset`回滚远程分支`master`到`A1`，那么理想状态是你的队友一拉代码`git pull`，他们的`master`分支也回滚了，然而现实却是，你的队友会看到下面的提示：
 
-```text
+```
 $ git status
 On branch master
 Your branch is ahead of 'origin/master' by 2 commits.
@@ -54,7 +54,7 @@ nothing to commit, working directory clean
 
   这个时候你大吼一声:兄弟们老子回退版本了。如果你的队友都是神之队友比如:`Tony`(腾讯`CTO`)，那么`Tony`会冷静的使用下面的命令来找出你回退版本后覆盖掉的他的提交，也就是`B1`那次提交，然后冷静的把自己的分支回退到那次提交，并且拉个分支
 
-  ```reStructuredText
+  ```
   git checkout tony_branch        // 先回到自己的分支  
   git reflog                      // 接着看看当前的commit id,例如:0bbbbb    
   git reset --hard B1             // 回到被覆盖的那次提交B1
@@ -65,20 +65,20 @@ nothing to commit, working directory clean
 
   通过上面一通敲`Tony`暂时舒了一口气，还好`B1`那次提交找回来了。这时`tony_backup`分支最新的一次提交就是`B1`，接着`Tony`要把自己的本地`master`分支和远程`master`分支保持一致
 
-  ```reStructuredText
+  ```
   git reset --hard origin/master
   ```
 
   执行了上面这条命令后，`Tony`的`master`分支才真正的回滚了，也就是说你的回滚操作才能对`Tony`生效，这个时候`Tony`的本地`maser`是这样的:`A1`，接着`Tony`要再次合并那个被丢掉的`B1`提交
 
-  ```text
+  ```
   git checkout master             // 切换到master
   git merge tony_backup           // 再合并一次带有B1的分支到master
   ```
 
   好了，`Tony`终于长舒一口气，这个时候他的`master`分支是这样的:`A1 – B1`，终于把丢掉的`B1`给找回来了，接着`push`然后你拉取后也能同步。同理对于所有的队友也要这么做，但是如果该队友没有提交被你丢掉，那么他拉完代码`git pull`之后，只需要强制用远程`master`覆盖掉本地`master`就可以了
 
-  ```reStructuredText
+  ```
   git reset --hard origin/master
   ```
 
@@ -86,7 +86,7 @@ nothing to commit, working directory clean
 
   然而很不幸的是，现实中我们经常遇到的都是猪一样的队友，他们一看到下面提示
 
-  ```reStructuredText
+  ```
   $ git status
   On branch master
   Your branch is ahead of 'origin/master' by 2 commits.
@@ -100,7 +100,7 @@ nothing to commit, working directory clean
 
 使用`git reset`回退公共远程分支的版本后，需要其他所有人手动用远程`master`分支覆盖本地`master`分支，显然这不是优雅的回退方法，下面我们使用另个一个命令来回退版本
 
-```reStructuredText
+```
 git revert HEAD                     // 撤销最近一次提交
 git revert HEAD~1                   // 撤销上上次的提交，注意:数字从0开始
 git revert <commit id>              // 撤销指定commit id这次提交
@@ -120,7 +120,7 @@ git revert <commit id>              // 撤销指定commit id这次提交
 
 - `git reset [ –soft | –mixed | –hard] [commit id] [--] [file]`版本回退
 
-  ```reStructuredText
+  ```
   soft:将仓库的修改丢弃
   mixed:将仓库和暂存区的修改丢弃
   hard:将仓库、暂存区和工作区的修改都丢弃
