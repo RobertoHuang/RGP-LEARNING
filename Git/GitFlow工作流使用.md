@@ -17,7 +17,6 @@
 ## 1. 分支
 
 - `Production`分支
-  
 > 也就是我们经常使用的`Master`分支，这个分支最近发布到生产环境的代码即最近发布的`Release`
   >
   >  这个分支只能从其他分支合并代码，不能在这个分支直接修改代码。每一次提交都需要打一次标签
@@ -39,10 +38,10 @@
   > 完成`Release`后【可能进行`BugFix`】，我们合并到`Master`和`Develop`分支，这个分支也可以修复`BUG`
 
 - `Hotfix`分支
-  
-  > 当我们在`Production`发现新的`Bug`时候，我们需要创建一个`Hotfix`分支
-  >
-  > 完成`Hotfix`后我们合并回`Master`和`Develop`分支，所以`Hotfix`的改动会进入下一个`Release`
+
+> 当我们在`Production`发现新的`Bug`时候，我们需要创建一个`Hotfix`分支
+>
+> 完成`Hotfix`后我们合并回`Master`和`Develop`分支，所以`Hotfix`的改动会进入下一个`Release`
 
 ## 2. 流程
 
