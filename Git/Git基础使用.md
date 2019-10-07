@@ -285,7 +285,7 @@ git rebase B
   - `reword(r)`，表明仍然使用该提交对象，但是需修改提交信息
   - `edit(e)`，使用该提交对象，但是不合并提交对象
   - `squash(s)`，使用该提交对象，但是将此提交与上一次提交对象合并
-  - `fixup(f)`，同squash值，但是丢失此次提交的日志信息
+  - `fixup(f)`，同`squash`值，但是丢失此次提交的日志信息
   - `exec(x)`，后接特定脚本，保存后将执行该脚本
   - `drop(d)`，移除该提交对象
   
@@ -297,7 +297,7 @@ git rebase B
 
   `打开GitBash -> 窗口右键 -> Options -> Text`
 
-  `将Locale(改成zh_CN) Character set改为GBK`，退出再打开`GitBash`即可
+  `将Locale(改成zh_CN) Character set改为GBK，退出再打开GitBash即可`
 
 - `Git Status`中文乱码问题解决，添加如下配置
 
