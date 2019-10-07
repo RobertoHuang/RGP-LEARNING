@@ -84,7 +84,6 @@ git checkout <branch name> 切换到指定分支
 git checkout -b <branch name> 创建并切换到指定分支
 
 git merge [--no-ff] <branch name> 将branch name分支合并到当前分支 
-
 --no-ff表示禁用fast-faorward，合并后的历史有分支能看出曾经做过合并，而fast-forward看不出曾经做过合并
 ```
 
@@ -136,6 +135,13 @@ git blame <filename>
 git diff 比较的是暂存区与工作区文件之间的差别
 git diff HEAD 比较的是最新的提交与工作区之间的区别
 git diff --cached 比较的是最新的提交与暂存区之间的差别
+```
+
+## 查看某个远程仓库的详细信息
+
+```
+# 查看某个远程仓库的详细信息
+git remote show [remote-name]
 ```
 
 ## git自带gui工具
@@ -191,7 +197,7 @@ fetch = +refs/heads/master:refs/remotes/origin/master
 git fetch origin +refs/heads/master:refs/remotes/origin/master
 ```
 
-关于`refspecs`大概就介绍到这里，个人理解它主要用于绑定远程分支和本地远程分支的对应关系
+关于`refspecs`大概就介绍到这里，个人理解它主要用于绑定远程分支和本地远程分支的对应关系。[参考链接](https://blog.csdn.net/longintchar/article/details/84480862)
 
 ## 远程协作
 
@@ -266,14 +272,14 @@ git rebase B
 - `rebase`过程冲突合并
 
   - `rebase`过程中也会出现冲突
-  - 可是使用`git rebase --skip`跳过重播
+  - 可以使用`git rebase --skip`跳过重播
   - 也解决冲突后使用`git add`添加然后执行`git rebase --continue`
-  - 接下来`git`会继续应用余下的补丁
+  - 接下来`git`会继续应用余下的补丁【查看剩余的补丁命令为`git rebase --edit-todo`】
   - 任何时候都可以通过如下命令终止`rebase`，分支会恢复到`rebase`开始前状态`git rebase --abort`
 
-- 使用交互式变基来合并多次提交`git rebase -i <arg>`
+- 使用交互式变基来合并多次提交`git rebase -i <arg>`或者`git rebase -i HEAD~`
 
-  `-i`后参数为提交对象`ID`，比较特殊的一个参数是`origin/master`,使用`git rebase -i origin/master`，可以获取最后一次从`origin`远端仓库拉取`pull`或推送`push`之后的所有提交
+  `-i`后参数为提交对象`ID`，比较特殊的一个参数是`origin/master`，使用`git rebase -i origin/master`，可以获取最后一次从`origin`远端仓库拉取`pull`或推送`push`之后的所有提交
 
   - `pick(p)`，表明正在使用
   - `reword(r)`，表明仍然使用该提交对象，但是需修改提交信息
@@ -282,6 +288,8 @@ git rebase B
   - `fixup(f)`，同squash值，但是丢失此次提交的日志信息
   - `exec(x)`，后接特定脚本，保存后将执行该脚本
   - `drop(d)`，移除该提交对象
+  
+- 关于`rebase`可以参考:[Git变基](https://git-scm.com/book/zh/v2/Git-%E5%88%86%E6%94%AF-%E5%8F%98%E5%9F%BA) 和 [Git由浅入深说变基](http://blog.codingplayboy.com/2017/04/14/git_rebase/)
 
 ## 附录
 
