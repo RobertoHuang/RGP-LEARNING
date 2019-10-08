@@ -98,16 +98,13 @@ syntax on
 
     ```shell
     # 下载zsh-autosuggestions
-    brew install zsh-autosuggestions
+    git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
     
     # 编辑ZSH配置文件添加插件 在plugins后添加zsh-autosuggestions插件
     vim ~/.zshrc
     plugins=(git autojump sublime web-search zsh-autosuggestions)
-    
-    # 在配置文件添加新的一行，重启后即可使用
-    source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
     ```
-
+    
     能记录平时你输入过的命令，下次再输入的时候它会提前提示你如果是你需要的命令直接 `Ctrl+F` 搞定
 
 ## 保存密码配置
