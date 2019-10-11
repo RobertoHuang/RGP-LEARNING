@@ -62,10 +62,52 @@
 
     如果安装完之后要修改访问的域名或者`IP`则需修改 `/etc/gitlab/gitlab.rb` 文件中的 `external_url` 
 
-  - 修改配置完成后重新配置服务
+  - 配置邮件服务器
+
+    ```shell
+    vim /etc/gitlab/gitlab.rb
+    
+    gitlab_rails['smtp_enable'] = true
+    gitlab_rails['smtp_address'] = "smtp.qq.com"
+    gitlab_rails['smtp_port'] = 465
+    gitlab_rails['smtp_user_name'] = "robertohuang@foxmail.com"
+    gitlab_rails['smtp_password'] = "xxx xxx xxx xxx"
+    gitlab_rails['smtp_domain'] = "smtp.qq.com"
+    gitlab_rails['smtp_authentication'] = "login"
+    gitlab_rails['smtp_enable_starttls_auto'] = true
+    gitlab_rails['smtp_tls'] = true
+    gitlab_rails['gitlab_email_from'] = "robertohuang@foxmail.com" #注意这个一定要填写，不然会报502错误
+    ```
+
+    修改配置完成后重新配置服务
+
+    ```shell
+    gitlab-ctl reconfigure
+    ```
+
+    测试配置是否成功。执行`gitlab-rails console`进入控制台然后执行测试发送邮件命令
 
     ```
-    gitlab-ctl reconfigure
+    Notify.test_email(‘收件人邮箱’, ‘邮件标题’, ‘邮件正文’).deliver_now
+    ```
+
+    当你看到以下提示时，那么恭喜你你配置成功啦
+
+    ```
+    => #<Mail::Message:69831111856280, Multipart: false, Headers: <Date: Fri, 11 Oct 2019 15:59:35 +0800>, <From: GitLab <robertohuang@foxmail.com>>, <Reply-To: GitLab <noreply@0.0.0.0>>, <To: 756858620@qq.com>, <Message-ID: <5da0366743734_59ce3f82ec0cf98c468d7@VM_0_2_centos.mail>>, <Subject: test>, <Mime-Version: 1.0>, <Content-Type: text/html; charset=UTF-8>, <Content-Transfer-Encoding: 7bit>, <Auto-Submitted: auto-generated>, <X-Auto-Response-Suppress: All>>
+    ```
+
+  - 防火墙开放端口
+
+    ```
+    firewall-cmd --zone=public --add-port=6677/tcp --permanent
+    firewall-cmd --reload
+    ```
+
+  - 设置成中文
+
+    ```
+    User Settings > Preferences > Localization 设置成中文
     ```
 
 - `Gitlab`常用命令
