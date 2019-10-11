@@ -314,4 +314,120 @@
   {"query":{"bool":{"must":[{"match":{"title":"blog"}}],"should":[{"match":{"title":{"query":"java"}}},{"match":{"title":{"query":"hadoop"}}},{"match":{"title":{"query":"elasticsearch"}}},{"match":{"title":{"query":"spark","boost":5}}}]}}}
   ```
 
+## dis_max
+
+- 为帖子数据增加`content`字段
+
+  ```
+  POST /forum/_bulk
+  {"update":{"_id":"1"}}
+  {"doc":{"content":"i like to write best elasticsearch article"}}
+  {"update":{"_id":"2"}}
+  {"doc":{"content":"i think java is the best programming language"}}
+  {"update":{"_id":"3"}}
+  {"doc":{"content":"i am only an elasticsearch beginner"}}
+  {"update":{"_id":"4"}}
+  {"doc":{"content":"elasticsearch and hadoop are all very good solution, i am a beginner"}}
+  {"update":{"_id":"5"}}
+  {"doc":{"content":"spark is best big data solution based on scala ,an programming language similar to java"}}
+  ```
+
+- 搜索`title`或`content`中包含`java`或`solution`的帖子
+
+  ```
+  GET /forum/_search
+  {"query":{"bool":{"should":[{"match":{"title":"java solution"}},{"match":{"content":"java solution"}}]}}}
   
+  GET /forum/_search
+  {"query":{"dis_max":{"queries":[{"match":{"title":"java solution"}},{"match":{"content":"java solution"}}]}}}
+  ```
+
+  `best fields`策略就是说搜索到的结果，应该是某一个`field`中匹配到了尽可能多的关键词被排在前面，而不是尽可能多的`field`匹配到了少数的关键词排在了前面
+
+- 搜索`title`或`content`中包含`java beginner`的帖子
+
+  ```
+  GET /forum/_search
+  {"query":{"dis_max":{"queries":[{"match":{"title":"java beginner"}},{"match":{"content":"java beginner"}}]}}}
+  ```
+
+  `dis_max`取多个`query`中分数最高的一个`query`的分数，使用`tie_breaker`将其他`query`的分数也考虑进去
+
+  ```
+  GET /forum/_search
+  {"query":{"dis_max":{"queries":[{"match":{"title":"java beginner"}},{"match":{"content":"java beginner"}}],"tie_breaker":0.3}}}
+  ```
+
+  `tie_breaker`参数的意义在于说将其他`query`的分数乘以`tie_breaker`，然后与最高分数的那个`query`综合在一起进行计算。除了取最高分以外还会考虑其他的`query`的分数，`tie_breaker`的值在0~1之间，是个小数
+
+## multi_match
+
+- `best field`策略
+
+  ```
+  GET /forum/_search
+  {"query":{"dis_max":{"queries":[{"match":{"title":{"query":"java beginner","minimum_should_match":"50%","boost":2}}},{"match":{"content":{"query":"java beginner","minimum_should_match":"50%"}}}],"tie_breaker":0.3}}}
+  
+  # 上述查询等价于下面的
+  
+  GET /forum/_search
+  {"query":{"multi_match":{"query":"java beginner","type":"best_fields","fields":["title^2","content"],"tie_breaker":0.3,"minimum_should_match":"50%"}}}
+  ```
+
+  `best_fields`是对多个`field`进行搜索，挑选某个`field`匹配度最高的那个分数，同时在多个`query`最高分相同的情况下，在一定程度上考虑其他`query`的分数。简单来说你对多个`field`进行搜索，就想搜索到某一个`field`尽可能包含更多关键字的数据
+
+  - 优点
+    - 通过`best_fields`策略以及综合考虑其他`field`
+    - 还有`minimum_should_match`支持可以尽可能精准地将匹配的结果推送到最前面
+  - 缺点
+     - 除了那些精准匹配的结果，其他差不多大的结果，排序结果不是太均匀，没有什么区分度了
+
+  实际的例子:百度之类的搜索引擎，最匹配的到最前面，但是其他的就没什么区分度了
+
+- `most field`策略
+
+  ```
+  # 添加测试数据
+  POST /forum/_mapping
+  {"properties":{"sub_title":{"type":"text","analyzer":"english","fields":{"std":{"type":"text","analyzer":"standard"}}}}}
+  
+  POST /forum/_bulk
+  {"update":{"_id":"1"}}
+{"doc":{"sub_title":"learning more courses"}}
+  {"update":{"_id":"2"}}
+  {"doc":{"sub_title":"learned a lot of course"}}
+  {"update":{"_id":"3"}}
+  {"doc":{"sub_title":"we have a lot of fun"}}
+  {"update":{"_id":"4"}}
+  {"doc":{"sub_title":"both of them are good"}}
+  {"update":{"_id":"5"}}
+  {"doc":{"sub_title":"haha, hello world"}}
+  
+  # best field策略
+  GET /forum/_search
+  {"query":{"match":{"sub_title":"learning courses"}}}
+  
+  使用best field策略查询出来的两条数据评分是一样的，可能这里有个疑问为什么learning评分不会比learned更高呢
+  
+  因为sub_title用的是enligsh analyzer，所以还原了单词
+  learning --> learn
+  learned --> learn
+  courses --> course
+  sub_titile: learning coureses --> learn course
+  
+  # most field策略
+  GET /forum/_search
+  {"query":{"multi_match":{"query":"learning courses","type":"most_fields","fields":["sub_title","sub_title.std"]}}}
+  
+  使用most field策略查询出来的分值有明显的区别，因为sub_title.std影响了评分（sub_title.std的分词器类型为standard不会还原单词时态）
+  ```
+  
+  `most_fields`综合多个`field`一起进行搜索，尽可能多地让所有`field`的`query`参与到总分数的计算中来，此时就会是个大杂烩，出现类似`best_fields`案例最开始的那个结果，结果不一定精准，某一个`document`的一个`field`包含更多的关键字，但是因为其他`document`有更多`field`匹配到了所以排在了前面
+  
+  - 优点:
+    - 将尽可能匹配更多field的结果推送到最前面，整个排序结果是比较均匀的
+  - 缺点:
+    - 可能那些精准匹配的结果，无法推送到最前面
+  
+  实际的例子:`wiki`明显的`most_fields`策略，搜索结果比较均匀，但是的确要翻好几页才能找到最匹配的结果
+
