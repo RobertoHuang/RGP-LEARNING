@@ -66,9 +66,7 @@ http://mirror.esuni.jp/jenkins/updates/update-center.json
 
 ## 权限管理
 
-<div  align="center">    
-    <img src="https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Linux/images/Jenkins%E6%9D%83%E9%99%90%E9%85%8D%E7%BD%AE.png" alt="jenkins权限配置" align=center />
-</div>
+关于`Jenkins`权限管理读这一篇就够用了:[https://www.cnblogs.com/kazihuo/p/9022899.html](https://www.cnblogs.com/kazihuo/p/9022899.html)
 
 ## Vue项目自动化部署配置
 

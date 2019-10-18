@@ -59,6 +59,13 @@
 - 编写`Nginx`服务启动脚本，设置`Nginx`开机启动
 
   ```shell
+  cd /lib/systemd/system/
+  vi nginx.service
+  ```
+  
+  内容如下
+  
+  ```shell
   [Unit]
   Description=nginx
   After=network.target remote-fs.target nss-lookup.target
@@ -69,22 +76,53 @@
   ExecStartPost=/bin/sleep 0.1
   ExecStartPre=/usr/local/nginx/sbin/nginx -t -c /usr/local/nginx/conf/nginx.conf
   ExecStart=/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
-  ExecReload=/bin/kill -s HUP $MAINPID
+ExecReload=/bin/kill -s HUP $MAINPID
   ExecStop=/bin/kill -s QUIT $MAINPID
   PrivateTmp=true
    
   [Install]
   WantedBy=multi-user.target
   ```
-
+  
   ```shell
   systemctl start|stop|reload|restart|status nginx.service
-  
+
   # 开机自启
   systemctl enable nginx.service
   
   # 关闭开机自启
   systemctl disable nginx.service
+  ```
+  
+- `Nginx` `HTTPS`配置 - 阿里云证书
+
+  ```
+  server {
+      listen 443;
+      server_name 你的域名;
+      ssl on;
+      root html;
+      index index.html index.htm;
+      ssl_certificate      /xxx.pem;
+      ssl_certificate_key  /xxx.key;
+      ssl_session_timeout 5m;
+      ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+      ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+      ssl_prefer_server_ciphers on;
+  
+      location / {
+          root html;
+          index  index.html index.htm;
+      }
+      
+      error_page  404              /404.html;
+  }
+  
+  server {
+      listen       80;
+      server_name  你的域名;
+      rewrite ^(.*)$ https://${server_name}$1 permanent;
+  }
   ```
 
   
