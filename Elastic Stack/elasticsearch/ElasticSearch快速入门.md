@@ -123,8 +123,37 @@
   # 由于version已经被客户端A修改成2，当B客户端尝试修改时报错:version_conflict_engine_exception
   ```
 
-  
+## 批量操作
 
+- 批量查询
+
+  ```
+  GET /_mget
+  {"docs":[{"_index":"test_index","_id":1},{"_index":"test_index","_id":2}]}
   
+  # 如果查询的document是一个index下 可以进一步简化为
+  GET /test_index/_mget
+  {"docs":[{"_id":1},{"_id":2}]}
+  ```
+
+- 批量增删改
+
+  ```
+  POST /_bulk
+  {"index":{"_index":"test_index","_id":"2"}}
+  {"test_field":"replaced test2"}
+  {"create":{"_index":"test_index","_id":"3"}}
+  {"test_field":"create test3"}
+  {"delete":{"_index":"test_index","_id":"1"}}
+  {"update":{"_index":"test_index","_id":"3"}}
+  {"doc":{"test_field":"bulk test1"}}
+  
+  （1）delete：删除一个文档，只要1个json串就可以了
+  （2）create：PUT /index/id/_create，强制创建
+  （3）index：普通的put操作，可以是创建文档，也可以是全量替换文档
+  （4）update：执行的partial update操作
+  bulk操作中，任意一个操作失败，是不会影响其他的操作的，但是在返回结果里会告诉你异常日志
+  bulk request会加载到内存里，如果太大的话性能反而会下降，因此需要反复尝试一个最佳的bulk size。一般从1000~5000条数据开始尝试逐渐增加。另外如果看大小的话，最好是在5~15MB之间
+  ```
 
   
