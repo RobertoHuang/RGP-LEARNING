@@ -65,7 +65,7 @@
   
   内容如下
   
-  ```shell
+  ```
   [Unit]
   Description=nginx
   After=network.target remote-fs.target nss-lookup.target
