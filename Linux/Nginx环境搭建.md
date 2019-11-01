@@ -130,11 +130,20 @@ ExecReload=/bin/kill -s HUP $MAINPID
 
 - `Nginx`部署`VUE`项目路由配置
 
-  ```
-  location ^~ /adminManager {
+  ```shell
+  location ^~ /adminManager/ {
       alias   /usr/local/live-training-admin-front/html/;
       index  index.html; #默认访问文件
       try_files $uri $uri/ /adminManager/index.html; #目录不存在则执行index.html
+  }
+  
+  location ^~ /live-training/ {
+      proxy_pass              http://localhost:8899/;
+      # proxy_set_header        X-Real-IP $remote_addr;
+      # proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      # proxy_set_header        X-Forwarded-Proto $scheme;
+      # proxy_set_header        HOST $host/work;
+    # proxy_read_timeout      60;
   }
   
   location / {
@@ -143,5 +152,5 @@ ExecReload=/bin/kill -s HUP $MAINPID
       try_files $uri $uri/ /index.html; #目录不存在则执行index.html
   }
   ```
-
+  
   
