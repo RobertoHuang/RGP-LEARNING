@@ -1,4 +1,4 @@
-# Item2保存服务器信息
+# Item2个性化配置
 
 ## 字体配置
 
@@ -17,17 +17,17 @@
   rm -rf fronts
   ```
 
-- 配置`iterm2`字体
+- 配置`iterm2`字体:`Preferences > Profiles > Default > Text`
 
   <div align="center">    
-      <img src="https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Others/images/item2%E5%AD%97%E4%BD%93%E9%85%8D%E7%BD%AE.png" align=center />
+      <img src="images/item2字体配置.png" align=center />
   </div>
 
 ## 配色方案
 
 从[https://github.com/mbadolato/iTerm2-Color-Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes)下载配色方案，并导入文件夹`schemes`下所有主题
 
-推荐配色方案`Solarized Dark Higher Contrast`。`VIM`配色配置:编辑`/usr/share/vim/vimrc`添加如下行
+推荐配色方案`Solarized Dark Higher Contrast`，`VIM`配色配置:编辑`/usr/share/vim/vimrc`添加如下行
 
 ```shell
 syntax on
@@ -37,7 +37,7 @@ syntax on
 
 - `Zsh`安装`brew install zsh`
 
-- `OhMyZsh`一键安装脚本`sh -c "$(wget -O- https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"`。默认安装后使用的是`robbyrussell`主题。可以修改默认主题，从[下载](git@github.com:RobertoHuang/mydotfiles.git)这里获取，把主题文件下载到`~/.oh-my-zsh/themes`里面，然后修改`~/.zshrc`文件，配置好主题名字即可
+- `OhMyZsh`一键安装脚本`sh -c "$(wget -O- https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"`。默认安装后使用的是`robbyrussell`主题，可以修改默认主题，从[下载](https://github.com/RobertoHuang/mydotfiles.git)这里获取，把主题文件下载到`~/.oh-my-zsh/themes`里面，然后修改`~/.zshrc`文件，配置好主题名字即可
 
   ```shell
   ZSH_THEME="lambda-mod"
@@ -150,17 +150,17 @@ syntax on
   `iTerm2 -> Preferences -> Profiles`为每个服务器的连接，打上不同的`Tag`就自动按`Tag`分好组了
 
   <div  align="center">    
-      <img src="https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Others/images/item2%E8%AE%B0%E4%BD%8F%E5%AF%86%E7%A0%81%E9%85%8D%E7%BD%AE.jpg" alt="item2记住密码配置" align=center />
+      <img src="images/item2记住密码配置.jpg" alt="item2记住密码配置" align=center />
   </div>
 
   另外还可以在`Colors`中设置每个打开`Tab`的颜色，多个项目同时操作也不怕搞错了
 
   <div  align="center">    
-      <img src="https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Others/images/item2%E8%AE%B0%E4%BD%8F%E5%AF%86%E7%A0%81%E9%85%8D%E7%BD%AE2.jpg" alt="item2记住密码配置2" align=center />
+      <img src="images/item2记住密码配置2.jpg" alt="item2记住密码配置2" align=center />
   </div>
 
   <div  align="center">    
-      <img src="https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Others/images/item2%E8%AE%B0%E4%BD%8F%E5%AF%86%E7%A0%81%E9%85%8D%E7%BD%AE3.jpg" alt="item2记住密码配置3" align=center />
+      <img src="images/item2记住密码配置3.jpg" alt="item2记住密码配置3" align=center />
   </div>
 
 - 最终效果
@@ -168,7 +168,7 @@ syntax on
   如图，使用起来方便多了
 
   <div  align="center">    
-      <img src="https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Others/images/item2%E8%AE%B0%E4%BD%8F%E5%AF%86%E7%A0%81%E9%85%8D%E7%BD%AE4.jpg" alt="item2记住密码配置4" align=center />
+      <img src="images/item2记住密码配置4.jpg" align=center />
   </div>
 
 - 保持回话
@@ -183,4 +183,20 @@ syntax on
   # 300 是发给服务端心跳的间隔，单位是秒，根据你自己的服务器情况设置
   ```
 
-  
+## 常用分屏快捷键
+
+```shell
+command + t：新建窗口
+
+command + d：垂直分屏
+
+command + shift + d：水平分屏
+
+command + ] 和command + [  在最近使用的分屏直接切换.
+
+command + alt + 方向键：切换到指定位置的分屏
+
+command + 数字：切换标签页
+
+command + 方向键：按方向切换标签页
+```

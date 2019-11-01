@@ -88,7 +88,7 @@
   
   # cd /var/run/
   # mkdir mysqld
-  # chmod 777 mysqld
+  # chown mysql:mysql mysqld
   
   # cd mysqld
   # echo -> mysqld.pid
