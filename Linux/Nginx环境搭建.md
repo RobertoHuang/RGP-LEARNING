@@ -84,7 +84,7 @@ ExecReload=/bin/kill -s HUP $MAINPID
   WantedBy=multi-user.target
   ```
   
-  
+  命令如下
   
 ```shell
   systemctl start|stop|reload|restart|status nginx.service
