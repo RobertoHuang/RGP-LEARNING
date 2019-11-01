@@ -76,7 +76,8 @@
   ExecStartPost=/bin/sleep 0.1
   ExecStartPre=/usr/local/nginx/sbin/nginx -t -c /usr/local/nginx/conf/nginx.conf
   ExecStart=/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
-
+ExecReload=/bin/kill -s HUP $MAINPID
+  ExecStop=/bin/kill -s QUIT $MAINPID
   PrivateTmp=true
   
   [Install]
