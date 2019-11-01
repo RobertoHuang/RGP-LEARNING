@@ -84,9 +84,11 @@ ExecReload=/bin/kill -s HUP $MAINPID
   WantedBy=multi-user.target
   ```
   
-  ```shell
+  
+  
+```shell
   systemctl start|stop|reload|restart|status nginx.service
-
+  
   # 开机自启
   systemctl enable nginx.service
   
@@ -122,6 +124,23 @@ ExecReload=/bin/kill -s HUP $MAINPID
       listen       80;
       server_name  你的域名;
       rewrite ^(.*)$ https://${server_name}$1 permanent;
+  }
+  ```
+
+
+- `Nginx`部署`VUE`项目路由配置
+
+  ```
+  location ^~ /adminManager {
+      alias   /usr/local/live-training-admin-front/html/;
+      index  index.html; #默认访问文件
+      try_files $uri $uri/ /adminManager/index.html; #目录不存在则执行index.html
+  }
+  
+  location / {
+      root   /usr/local/live-training-front/html; #默认访问目录
+      index  index.html; #默认访问文件
+      try_files $uri $uri/ /index.html; #目录不存在则执行index.html
   }
   ```
 
