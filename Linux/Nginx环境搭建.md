@@ -86,16 +86,16 @@ ExecReload=/bin/kill -s HUP $MAINPID
   
   命令如下
   
-```shell
+  ```shell
   systemctl start|stop|reload|restart|status nginx.service
-  
+    
   # 开机自启
   systemctl enable nginx.service
-  
+    
   # 关闭开机自启
   systemctl disable nginx.service
   ```
-  
+
 - `Nginx` `HTTPS`配置 - 阿里云证书
 
   ```
