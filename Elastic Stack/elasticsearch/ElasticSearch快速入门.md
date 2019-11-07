@@ -156,4 +156,11 @@
   bulk request会加载到内存里，如果太大的话性能反而会下降，因此需要反复尝试一个最佳的bulk size。一般从1000~5000条数据开始尝试逐渐增加。另外如果看大小的话，最好是在5~15MB之间
   ```
 
+
+## 附录
+
+- [ElasticSearch写一致性及quorum机制](https://zhouze-java.github.io/2018/11/20/Elasticsearch-15-%E5%86%99%E4%B8%80%E8%87%B4%E6%80%A7%E5%8E%9F%E7%90%86%E5%8F%8Aquorum%E6%9C%BA%E5%88%B6/)
+
+- [ElasticSearch multi-index搜索模式](https://segmentfault.com/a/1190000019003460)
+
   
