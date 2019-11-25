@@ -23,8 +23,6 @@
 - 创建配置文件
 
   ```reStructuredText
-  vim /etc/my.cnf
-  
   [client]
   port = 3306
   socket = /tmp/mysql.sock
@@ -37,14 +35,18 @@
   socket=/tmp/mysql.sock
   log-error=/var/log/mysqld.log
   pid-file=/var/run/mysqld/mysqld.pid
-  user=mysql 
+  user=mysql
   
-  # 不区分大小写
+  # 最大连接数
+  max_connections=5000
+  # 表名不区分大小写
   lower_case_table_names = 1
-  
+  # SQL模式 可参考:https://blog.csdn.net/sunyadong_/article/details/86491139
   sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
   
-  max_connections=5000
+  [mysql]
+  default-character-set=utf8
+  socket=/tmp/mysql.sock
   ```
 
 - 初始化数据库
@@ -144,5 +146,15 @@
   source /etc/profile
   ```
 
-  
 
+## 附录
+
+如果出现错误:
+
+- `Too many arguments (first extra is 'start')`
+
+  ```
+  遇到该问题通过直接输入 /路径/mysqld —user=mysql，的方式启动
+  ```
+
+  
