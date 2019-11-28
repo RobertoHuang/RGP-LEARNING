@@ -1,6 +1,34 @@
 # Kafka Consumer
 
-> 从编程角度来讲消费者就是向`Kafka`拉取消息的应用，`KafkaConsumer`是线程不安全的
+> 从编程角度来讲消费者就是向`Kafka`拉取消息的应用
+>
+> `Kafka Consumer`对拉取消息过程进行封装，从而使开发人员不必关心与`Kafka`服务端之间网络连接的管理，心跳检测，请求超时重试等底层操作。也不必关心订阅`Topic`的分区数量、分区`Leader`副本的网络拓扑以及`Consumer Group`的`Rebalance`等具体细节。注意**`KafkaConsumer`是线程不安全的**
+
+## 传递保证语义
+
+- `Exactly once`:每条消息只会被传递一次
+
+  ```
+  - 消费者端保证
+  	1.为每个消息添加一个全局唯一主键，生产者不做特殊处理，让消费者消费的时候对消息进行去重
+  	
+  	2.每个分区只有一个生产者写入消息，当出现异常或超时的情况时，生产者就要查询此分区的最后一条消息用来决定后续操作是消息重传还是继续发送
+  	
+  - 消费者端保证
+  	1.消费者关闭自动提交offset功能且不再手动提交offset，即由消费者自己保存offset信息
+      我们将offset处理和消息消费处理放在同一个事务中，事务执行成功则认为此消息被消费，否则事务回滚需要重新消费
+      当出现消费者宕机或者重启或rebalance时消费者可以从关系型数据库中获取到对应的offset继续消费
+      消费者还需要根据实际情况判断是否需要对消息进行去重操作
+  ```
+
+- `At most onct`消息可能会丢 但绝不会重复消费
+
+- `At least once`消息绝不会丢，但可能会重复传递
+
+## 消费组与消费者关系的演进
+
+- 早期消费组与消费者的关系保存在`ZK`节点下，每个消费者监听该节点即可获取到消费者变化。但是这个方案过度依赖`ZK`，会引起羊群效应(一个节点变化需要发送大量`Watch`通知给客户端)、脑裂(`zk`为最终一致性)
+- 后续引入了消费组协调器`GroupCoordinator`，只需要`GroupCoordinator`在`Zookeeper`上添加`Watch`。消费者主要发送`JoinGroupoRequest`和`HeartbeatRequest`，及分区分配是在服务端完成的。如果需要修改分区分配策略就必须要重启服务端，于是后来添加了`SyncGroupRequest`完成在客户端执行分区分配策略逻辑
 
 ## 消费者与消费组
 
@@ -9,7 +37,7 @@
 - 如果所有的消费者都隶属于同一个消费组，那么生产者发送一条消息只会被一个消费者处理【点对点】
 - 如果所有的消费者都隶属于不同的消费组，那么生产者发送的消息会被广播给所有的消费者【发布/订阅】
 
-![消费者与消费组](https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Kafka/images/%E6%B6%88%E8%B4%B9%E8%80%85%E4%B8%8E%E6%B6%88%E8%B4%B9%E7%BB%84.png)
+![消费者与消费组](images/Kafka Consumer基础概念解析/消费者与消费组.png)
 
 消费者与消费组这种模型可以让整体的消费能力具备横向伸缩性
 
@@ -140,3 +168,14 @@ public class ConsumerRecord<K, V> {
 
 一般情况下位移提交失败的情况很少发生，后面的提交也会有成功的，所以不重试也没关系。重试会增加代码逻辑的复杂度，不重试会增加重复消费的概率。如果消费者异常退出那么这个重复消费的问题就很难避免，因为这种情况下无法及时提交`Offset`。如果消费者正常退出或发生重平衡我们可以在退出或重平衡执行之前使用同步提交的方式做最后的把关(`consumer.commitSync()`)
 
+## Rebalance消费者处理
+
+消费者可以通过`ConsumerRebalanceListener`监听到`Rebalance`操作并执行一下逻辑，常见的如下
+
+- `onPartitionsRevoked`
+
+   `consumer`停止拉取数据之后`rebalance`之前我们可以在此方法中提交`offset`
+
+- `onPartitionsAssigned` 
+
+  `rebalance`完成之后`consumer`拉取消息前我们可以在此方法中调整或者重置`offset`
