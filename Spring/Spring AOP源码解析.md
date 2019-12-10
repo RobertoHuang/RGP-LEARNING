@@ -51,7 +51,9 @@ class AspectJAutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 
 ## AnnotationAwareAspectJAutoProxyCreator
 
-![AnnotationAwareAspectJAutoProxyCreator类图](images/Spring AOP源码解析/AnnotationAwareAspectJAutoProxyCreator.png)
+<div align="center">    
+    <img src="images/Spring AOP源码解析/AnnotationAwareAspectJAutoProxyCreator.png" align=center />
+</div>
 
 从类图是可以大致了解`AnnotationAwareAspectJAutoProxyCreator`这个类的功能【`bean`生命周期相关接口】
 
