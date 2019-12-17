@@ -43,7 +43,7 @@
   
       @Override
       public void report(SortedMap<MetricName, Gauge> gauges, SortedMap<MetricName, Counter> counters, SortedMap<MetricName, Histogram> histograms, SortedMap<MetricName, Meter> meters, SortedMap<MetricName, Timer> timers) {
-          for (Map.Entry<MetricName, Gauge> entry : ) {
+          for (Map.Entry<MetricName, Gauge> entry : gauges) {
               MetricName metricName = entry.getKey();
               reportToOpentsdb(metricName.getKey(), metricName.getTags(), System.currentTimeMillis() / 1000, entry.getValue().getValue());
           }
@@ -64,6 +64,9 @@
   ```java
   metricRegistry.counter(MetricName).inc();
   metricRegistry.fastCompass(MetricName).record(DURATION, SUBCATEGORY);
+  
+  // 自定义count计算
+  long compassFlow = (count << LogAppenderReporter.FASTCOMPASS_COUNT_OFFSET) - (1L << LogAppenderReporter.FASTCOMPASS_COUNT_OFFSET) + size;
   ```
 
 - 初始化`Reporter`输出指标信息
