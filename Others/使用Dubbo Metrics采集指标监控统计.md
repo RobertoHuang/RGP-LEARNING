@@ -64,7 +64,8 @@
   ```java
   metricRegistry.counter(MetricName).inc();
   metricRegistry.fastCompass(MetricName).record(DURATION, SUBCATEGORY);
-  
+  metricRegistry.histogram(MetricName, ReservoirType.SLIDING_TIME_WINDOW).update(METRIC_VALUE)
+      
   // 自定义count计算
   long compassFlow = (count << LogAppenderReporter.FASTCOMPASS_COUNT_OFFSET) - (1L << LogAppenderReporter.FASTCOMPASS_COUNT_OFFSET) + size;
   ```
@@ -76,7 +77,9 @@
       private static final int GENERAL_MAX_SAMPLE_NUM = 2;
       private static final int CRITICAL_MAX_SAMPLE_NUM = 10;
   
-      /** FastCompass实现中的数字分隔偏移量，后半段数字所占位数 */
+      /**
+       * FastCompass实现中的数字分隔偏移量，后半段数字所占位数
+       */
       public static final int FASTCOMPASS_COUNT_OFFSET = 38;
   
       private static final long FASTCOMPASS_MASK_OFFSET = (1L << FASTCOMPASS_COUNT_OFFSET) - 1;
@@ -94,18 +97,18 @@
   
       private static final Logger LOGGER = LoggerFactory.getLogger(SimpleScheduledReporter.class);
   
-      public SimpleScheduledReporter(MetricFilter filter, MetricRegistry registry) {
+      public SimpleScheduledReporter(final MetricFilter filter, final MetricRegistry registry) {
           this.filter = filter;
           this.registry = registry;
       }
   
-      public void start(long period, TimeUnit unit) {
+      public void start(final long period, final TimeUnit unit) {
           executor.scheduleWithFixedDelay(new Runnable() {
               @Override
               public void run() {
                   try {
                       report();
-                  } catch (Throwable e) {
+                  } catch (final Throwable e) {
                       LOGGER.error("Throwable RuntimeException thrown from {}#report. Exception was suppressed.", SimpleScheduledReporter.this.getClass().getSimpleName(), e);
                   }
               }
@@ -118,22 +121,23 @@
           }
       }
   
-      public void report(SortedMap<MetricName, Gauge> gauges, SortedMap<MetricName, Counter> counters, SortedMap<MetricName, Histogram> histograms, SortedMap<MetricName, Meter> meters, SortedMap<MetricName, Timer> timers, SortedMap<MetricName, Compass> compass, SortedMap<MetricName, FastCompass> fastCompass) {
-           final long now = this.clock.getTime();
-           // reportOtherMetrics();
-           reportCounter(counters, now);
-           reportFastCompass(fastCompass, now);
-           for (MetricLevel level : MetricLevel.values()) {
-               final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
-               final long endTime = (now / interval - 1) * interval;
-               this.lastTimestamps.put(level, endTime);
-           }
+      public void report(final SortedMap<MetricName, Gauge> gauges, final SortedMap<MetricName, Counter> counters, final SortedMap<MetricName, Histogram> histograms, final SortedMap<MetricName, Meter> meters, final SortedMap<MetricName, Timer> timers, final SortedMap<MetricName, Compass> compass, final SortedMap<MetricName, FastCompass> fastCompass) {
+          final long now = this.clock.getTime();
+          // reportOtherMetrics();
+          reportCounter(counters, now);
+          reportHistograms(histograms, now);
+          reportFastCompass(fastCompass, now);
+          for (final MetricLevel level : MetricLevel.values()) {
+              final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
+              final long endTime = (now / interval - 1) * interval;
+              this.lastTimestamps.put(level, endTime);
+          }
       }
   
-      private void reportCounter(SortedMap<MetricName, Counter> counters, long now) {
+      private void reportCounter(final SortedMap<MetricName, Counter> counters, final long now) {
           counters.entrySet().stream().forEach(entry -> {
-              Counter counter = entry.getValue();
-              MetricName metricName = entry.getKey();
+              final Counter counter = entry.getValue();
+              final MetricName metricName = entry.getKey();
               if (!(counter instanceof BucketCounter)) {
                   // doBaseCountReport();
               } else {
@@ -142,12 +146,24 @@
           });
       }
   
-      private void reportFastCompass(SortedMap<MetricName, FastCompass> fastCompass, long now) {
+      private void reportFastCompass(final SortedMap<MetricName, FastCompass> fastCompass, final long now) {
           fastCompass.entrySet().forEach(entry -> doReportFastCompass(entry.getKey(), entry.getValue(), now));
       }
   
-      private void doReportBucketCounter(MetricName metricName, BucketCounter counter, long now) {
-          Map<Long, Long> bucketCounts = counter.getBucketCounts();
+      private void reportHistograms(final SortedMap<MetricName, Histogram> histograms, final long now) {
+          for (final Map.Entry<MetricName, Histogram> entry : histograms.entrySet()) {
+              final MetricName metricName = entry.getKey();
+              final Long lastReport = MapUtils.getLong(this.lastTimestamps, metricName.getMetricLevel(), 0L);
+              final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(metricName.getMetricLevel()));
+              if (now - lastReport > interval) {
+                  final Histogram histogram = entry.getValue();
+                  doReportHistogram(metricName, histogram, now);
+              }
+          }
+      }
+  
+      private void doReportBucketCounter(final MetricName metricName, final BucketCounter counter, final long now) {
+          final Map<Long, Long> bucketCounts = counter.getBucketCounts();
           // 计算Report时间间隔
           final MetricLevel level = metricName.getMetricLevel();
           final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
@@ -165,7 +181,7 @@
           }
       }
   
-      private void doReportFastCompass(MetricName metricName, FastCompass fastCompass, long now) {
+      private void doReportFastCompass(final MetricName metricName, final FastCompass fastCompass, final long now) {
           // 计算Report时间间隔
           final MetricLevel level = metricName.getMetricLevel();
           final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
@@ -196,26 +212,33 @@
           }
       }
   
-      public static long getFastCompassCount(long num) {
+      private void doReportHistogram(final MetricName metricName, final Histogram histogram, final long now) {
+          final Snapshot snapshot = histogram.getSnapshot();
+          // this.reportToOpenTSDB(metricName.getKey() + ".min", metricName.getTags(), now, snapshot.getMin());
+          // this.reportToOpenTSDB(metricName.getKey() + ".max", metricName.getTags(), now, snapshot.getMax());
+          // this.reportToOpenTSDB(metricName.getKey() + ".avg", metricName.getTags(), now, snapshot.getMean());
+      }
+  
+      public static long getFastCompassCount(final long num) {
           // 获取总调用次数
           return num >> FASTCOMPASS_COUNT_OFFSET;
       }
   
-      public static long getFastCompassSum(long num) {
+      public static long getFastCompassSum(final long num) {
           // 获取总响应时间
           return num & FASTCOMPASS_MASK_OFFSET;
       }
   
       /**
        * 〈避免startTime与endTime差距太长导致的创建大量对象〉
-       *
-       *  - 主要作用于首次report的时候，startTime为0 / report阻塞导致时间差距拉大
+       * <p>
+       * - 主要作用于首次report的时候，startTime为0 / report阻塞导致时间差距拉大
        */
-      private static long sampleReduce(long startTime, long endTime, long interval, MetricLevel level) {
+      private static long sampleReduce(final long startTime, final long endTime, final long interval, final MetricLevel level) {
           // 计算可能需要report次数
-          int sampleNum = (int) ((endTime - startTime) / interval);
+          final int sampleNum = (int) ((endTime - startTime) / interval);
           // 计算最大可允许的report次数
-          int maxSampleNum = (level == MetricLevel.CRITICAL) ? CRITICAL_MAX_SAMPLE_NUM : GENERAL_MAX_SAMPLE_NUM;
+          final int maxSampleNum = (level == MetricLevel.CRITICAL) ? CRITICAL_MAX_SAMPLE_NUM : GENERAL_MAX_SAMPLE_NUM;
           // 返回可靠的report startTime
           return (sampleNum > maxSampleNum) ? endTime - interval * maxSampleNum : startTime;
       }
@@ -225,3 +248,4 @@
 ## 整合OpenTSDB
 
 将指标值转成`Point`对象【指标名、`tag`、`当前时间戳`、`指标对应的值`】 - > 存入`OpenTSDB` -> 界面展示
+
