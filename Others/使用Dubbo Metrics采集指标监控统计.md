@@ -245,6 +245,35 @@
   }
   ```
 
+## 防止Report被启动多次
+
+```java
+public class ClientStatsManager {
+    private final static AtomicLong REFS = new AtomicLong(0);
+    private final static AtomicReference<SimpleScheduledReporter> METRIC_REPORT = new AtomicReference<>();
+
+    public static void refStats() {
+        final long oldCount = REFS.getAndIncrement();
+        if (oldCount == 0) {
+            final SimpleScheduledReporter metricReporter = new SimpleScheduledReporter(XXXRegister register, MetricFilter.ALL);
+            // 保证一分钟内至少被检查两次
+            // 确保前一分钟的统计数据在当前分钟内一定内被处理
+            metricReporter.start(29, TimeUnit.SECONDS);
+            METRIC_REPORT.set(metricReporter);
+        }
+    }
+
+    public static void unrefStats() {
+        final MetricReporter reporter = METRIC_REPORT.get();
+        final long oldCount = REFS.decrementAndGet();
+        if (oldCount == 0) {
+            reporter.stop();
+            METRIC_REPORT.compareAndSet(reporter, null);
+        }
+    }
+}
+```
+
 ## 整合OpenTSDB
 
 将指标值转成`Point`对象【指标名、`tag`、`当前时间戳`、`指标对应的值`】 - > 存入`OpenTSDB` -> 界面展示
