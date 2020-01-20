@@ -23,6 +23,8 @@
 - 创建配置文件
 
   ```reStructuredText
+  vim /etc/my.cnf
+  
   [client]
   port = 3306
   socket = /tmp/mysql.sock
