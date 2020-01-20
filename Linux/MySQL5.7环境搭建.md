@@ -30,6 +30,7 @@
   socket = /tmp/mysql.sock
   
   [mysqld]
+  # 如果需要支持emoji表情设置为utf8mb4
   character_set_server=utf8
   init_connect='SET NAMES utf8'
   basedir=/usr/local/mysql
@@ -47,6 +48,7 @@
   sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
   
   [mysql]
+  # 如果需要支持emoji表情设置为utf8mb4
   default-character-set=utf8
   socket=/tmp/mysql.sock
   ```
