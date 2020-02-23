@@ -87,12 +87,13 @@
   添加完成后查看`Modules`验证
       
         <div align="center">    
-      <img src="images/Spring源码环境搭建/image-20200223174213547.png" align=center />
+      	<img src="images/Spring源码环境搭建/image-20200223174213547.png" align=center />
   </div>
-       `spring-aspects`模块添加`Facets`属性
       
-        <div align="center">    
-          <img src="images/Spring源码环境搭建/image-20200223175340724.png" align=center />
+        `spring-aspects`模块添加`Facets`属性
+      
+      <div align="center">    
+            <img src="images/Spring源码环境搭建/image-20200223175340724.png" align=center />
         </div>
       
       更改`IDEA`编译器，使`IDEA`能够编译`*.aj`文件，步骤如下
