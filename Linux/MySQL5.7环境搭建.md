@@ -40,6 +40,10 @@
   pid-file=/var/run/mysqld/mysqld.pid
   user=mysql
   
+  # 查询缓存配置
+  query_cache_type = ON
+  query_cache_size = 20M
+  
   # 最大连接数
   max_connections=5000
   # 表名不区分大小写
@@ -137,7 +141,7 @@
 
   ```shell
   # su mysql
-  ~ service mysqld start/stop/restart
+  service mysqld start/stop/restart
   ```
 
 - 添加系统环境变量
