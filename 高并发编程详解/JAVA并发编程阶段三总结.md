@@ -2,7 +2,7 @@
 
 # `JAVA`并发编程阶段三总结
 
-## CAS相关知识
+## Atomic相关知识
 
 `CAS - compare and swap`的缩写，中文翻译成比较并交换
 
@@ -38,7 +38,18 @@ public static void main(final String[] args) {
 }
 ```
 
-**针对只能保证一个共享变量的原子操作问题** - `JDK`提供了`AutomicReference`解决
+**针对只能保证一个共享变量的原子操作问题** - `JDK`提供了`AtomicReference`解决，`AtomicReference`还可以用来解决匿名内部类的`Final`问题，示例代码如下
 
+```java
+public static void main(String[] args) {
+    final AtomicReference<Object> atomicReference = new AtomicReference<>(new Object());
+    new Thread(() -> {
+        System.out.println("invoke something.");
+        atomicReference.set(new Object());
+    }).start();
+}
+```
 
+`Atmoic`数组操作相关的包使用(略)
 
+`AtomicReferenceFieldUpdater`更节约内存【[Atomic包之FieldUpdater深度解析](https://github.com/aCoder2013/blog/issues/10)】
