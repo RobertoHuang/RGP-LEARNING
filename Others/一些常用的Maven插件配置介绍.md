@@ -269,3 +269,63 @@
 </plugin>
 ```
 
+- 解决二方库`Profiler`解析问题，及修改`package`后`pom`的信息
+
+    ```xml
+    <!-- 解析、压缩pom插件; 一个小缺陷: parent中的依赖、成员会被拷贝到每个子模块中, 但不影响使用 -->
+    <plugin>
+        <groupId>com.carrotgarden.maven</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.6.20190428102750</version>
+        <configuration>
+            <!-- 依赖解析开关 -->
+            <performDependencyResolve>false</performDependencyResolve>
+            <!-- 只解析指定级别以上的scope, 不在范围内的scope依赖会被删除; 这里设置了runtime那么test依赖就会删除 -->
+            <includeScope>runtime</includeScope>
+            <!-- 排除掉依赖解析, 设置为false时可以看到一个模块的完整依赖(不管有多少层级依赖,它会把这些依赖全部写入当前模块生成的pom文件中) -->
+            <excludeTransitive>true</excludeTransitive>
+    
+            <!-- performEraseScopes和performDependencyResolve是二选一的 -->
+            <!-- 如果不启用解析(performDependencyResolve=false), 又想要删除scope, 就可以用这个来删除指定scope列表的所有依赖, 这里把test依赖删掉没啥用 -->
+            <performEraseScopes>true</performEraseScopes>
+            <scopeEraseList>
+                <scope>test</scope>
+            </scopeEraseList>
+    
+            <!-- 开启pom.xml成员删除, 被删除的成员列表通过:memberRemoveList设置 -->
+            <performRemoveMembers>true</performRemoveMembers>
+            <memberRemoveList>
+                <member>properties</member>
+                <member>distributionManagement</member>
+                <member>dependencyManagement</member>
+                <member>repositories</member>
+                <member>pluginRepositories</member>
+                <member>build</member>
+                <member>profiles</member>
+                <member>reporting</member>
+            </memberRemoveList>
+    
+            <!-- 开启pom.xml的maven坐标替换. -->
+            <performOverrideIdentity>true</performOverrideIdentity>
+            <overrideGroupId>${project.groupId}</overrideGroupId>
+            <overrideArtifactId>${project.artifactId}</overrideArtifactId>
+    
+            <!-- 将指定packaging类型的pom.xml用生成的pom.xml.flatten替换 -->
+            <performSwitchPomXml>true</performSwitchPomXml>
+            <packagingSwitchList>
+                <packaging>jar</packaging>
+                <packaging>pom</packaging>
+            </packagingSwitchList>
+        </configuration>
+        <executions>
+            <!-- 在"prepare-package"期间执行"flatten:flatten" -->
+            <execution>
+                <goals>
+                    <goal>flatten</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+    ```
+
+    
