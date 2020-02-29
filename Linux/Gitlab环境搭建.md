@@ -148,3 +148,4 @@
   sudo gitlab-ctl reconfigure
   ```
 
+- 启动完成后需要在控制台禁止用户注册功能

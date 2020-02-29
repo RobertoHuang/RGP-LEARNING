@@ -2,20 +2,17 @@
 
 ## 安装
 
-- 拉取`Jenkins`库
+- 拉取`Jenkins`库，安装`Jenkins`
 
   ```shell
   sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+  
   sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
-  ```
-
-- 安装`Jenkins`包
-
-  ```shell
+  
   yum install -y jenkins
   ```
 
-- 更新`Jenkins`包
+- 如果需要对`Jenkins`进行更新可以使用如下命令
 
   ```shell
   yum update jenkins
@@ -53,20 +50,56 @@
 
 ## 插件安装
 
-- `Maven`项目支持:`Maven Integration`
-- 通过`SSH`发布项目:`Publish Over SSH`
-- 构建时候支持`Git`分支选择:`Git Parameter`
-- 构建`NodeJS`项目:`NodeJS`
+如果插件安装失败，可替换插件源
 
-如果插件安装失败，可替换插件源`系统管理->管理插件->高级->选择升级站点`
+- 先加载好所有的可用插件【系统管理->插件管理->可用插件】等页面刷新完成
 
-```
-http://mirror.esuni.jp/jenkins/updates/update-center.json
-```
+- 修改地址文件替换为国内源地址
+
+    ```shell
+    cd /var/lib/jenkins/updates/
+    
+    sed -i 's/http:\/\/updates.jenkins-ci.org\/download/https:\/\/mirrors.tuna.tsinghua.edu.cn\/jenkins/g' default.json && sed -i 's/http:\/\/www.google.com/https:\/\/www.baidu.com/g' default.json
+    ```
+
+- `系统管理->管理插件->高级->选择升级站点`
+
+    ```reStructuredText
+    https://mirrors.tuna.tsinghua.edu.cn/jenkins/updates/update-center.json
+    ```
+
+- 重启`Jenkins`使配置生效
+
+常用的插件
+
+- `credentials Binding`凭据管理
+- `git`源码管理
+- `Git Parameter`构建时候支持`Git`分支选择
+- `Deploy to container`将构建结果部署到容器中
+- `Maven Integration plugin` `Maven`项目构建
+- `Pipeline`+`Pipeline: SCM Step`使用流水线构建项目
+- `GitLab`+`GitLab Hook`钩子触发构建过程
+- `Publish Over SSH`通过`SSH`发布项目
+- `NodeJS`构建`NodeJS`项目
+- `Email Extension Template`发送邮件相关插件
 
 ## 权限管理
 
-关于`Jenkins`权限管理读这一篇就够用了:[https://www.cnblogs.com/kazihuo/p/9022899.html](https://www.cnblogs.com/kazihuo/p/9022899.html)
+- 安装`Role-based Authorization Strategy`插件并启用
+
+    ![image-20200229192028934](images/Jenkins环境搭建/image-20200229192028934.png)
+
+- 配置角色和权限对应关系，其中`Global roles`为全局权限，`Project roles`为项目权限
+
+    ![](images/Jenkins环境搭建/image-20200229203304363.png)
+
+- 添加完对应角色配置后，需要为用户分配对应角色
+
+    ![image-20200229203510623](images/Jenkins环境搭建/image-20200229203510623.png)
+
+    
+
+具体可参考关于`Jenkins`权限管理读这一篇就够用了:[https://www.cnblogs.com/kazihuo/p/9022899.html](https://www.cnblogs.com/kazihuo/p/9022899.html)
 
 ## Vue项目自动化部署配置
 
