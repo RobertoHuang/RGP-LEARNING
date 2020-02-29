@@ -1,24 +1,31 @@
-# Gitlab
+# Gitlab环境搭建
 
 > 环境:Centos 7.X
 
-- 打开系统防火墙中的`HTTP`和`SSH`访问
+- 安装相关依赖
+
+    ```shell
+    sudo yum install -y curl policycoreutils-python openssh-server
+    ```
+
+- 启动`SSH`服务&设置为开机启动 打开系统防火墙中的`HTTP`和`SSH`访问
 
   ```sh
-  sudo yum install -y curl policycoreutils-python openssh-server
   sudo systemctl enable sshd
   sudo systemctl start sshd
-  sudo firewall-cmd --permanent --add-service=http
+  
+  sudo firewall-cmd --add-service=ssh --permanent
+  sudo firewall-cmd --add-service=http --permanent 
   sudo systemctl reload firewalld
   ```
 
-  在执行 `sudo firewall-cmd --permanent --add-service=http` 时可能会遇到 `FirewallD is not running` 错误提示，意思是`未运行防火墙`。 使用以下命令开启防火墙即可
+  在执行 `sudo firewall-cmd --add-service=xxx --permanent` 时可能会遇到 `FirewallD is not running` 错误提示，意思是未运行防火墙。 使用以下命令开启防火墙即可
 
   ```shell
   systemctl start firewalld.service
   ```
 
-- 安装`Postfix`邮件服务
+- 安装`Postfix`邮件服务&设置开机启动
 
   ```
   sudo yum install postfix
@@ -33,7 +40,8 @@
   
   # 修改内容如下
   inet_interfaces = all
-  inet_protocols = ipv4 // 或 all
+  # 修改内容如下或all
+  inet_protocols = ipv4 
   
   # 修改完成后执行
   sudo systemctl restart postfix
@@ -87,7 +95,7 @@
 
     测试配置是否成功。执行`gitlab-rails console`进入控制台然后执行测试发送邮件命令
 
-    ```
+    ```shell
     Notify.test_email(‘收件人邮箱’, ‘邮件标题’, ‘邮件正文’).deliver_now
     ```
 
@@ -97,16 +105,31 @@
     => #<Mail::Message:69831111856280, Multipart: false, Headers: <Date: Fri, 11 Oct 2019 15:59:35 +0800>, <From: GitLab <robertohuang@foxmail.com>>, <Reply-To: GitLab <noreply@0.0.0.0>>, <To: 756858620@qq.com>, <Message-ID: <5da0366743734_59ce3f82ec0cf98c468d7@VM_0_2_centos.mail>>, <Subject: test>, <Mime-Version: 1.0>, <Content-Type: text/html; charset=UTF-8>, <Content-Transfer-Encoding: 7bit>, <Auto-Submitted: auto-generated>, <X-Auto-Response-Suppress: All>>
     ```
 
+  - 禁用创建组权限
+
+      `GitLab`默认所有的注册用户都可以创建组。但对于团队来说通常只会给`Leader`相关权限。虽然可以在用户管理界面取消权限但毕竟不方便。我们可以通过配置`GitLab`默认禁用创建组权限
+
+      ```shell
+      # 修改配置文件
+      sudo vi /etc/gitlab/gitlab.rb
+      
+      # 开启gitlab_rails['gitlab_default_can_create_group'] 选项，并将值设置为false
+      gitlab_rails['gitlab_default_can_create_group'] = false
+      
+      # 保存后，重新配置并启动GitLab
+      sudo gitlab-ctl reconfigure
+      ```
+
   - 防火墙开放端口
 
-    ```
+    ```shell
     firewall-cmd --zone=public --add-port=6677/tcp --permanent
     firewall-cmd --reload
     ```
 
   - 设置成中文
 
-    ```
+    ```reStructuredText
     User Settings > Preferences > Localization 设置成中文
     ```
 
