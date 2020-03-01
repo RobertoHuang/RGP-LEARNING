@@ -53,3 +53,6 @@ public static void main(String[] args) {
 `Atmoic`数组操作相关的包使用(略)
 
 `AtomicReferenceFieldUpdater`更节约内存【[Atomic包之FieldUpdater深度解析](https://github.com/aCoder2013/blog/issues/10)】
+
+`Atomic`类底层使用了`Unsafe`类，关于`Unsafe`类可参考美团出品:[Java魔法类：Unsafe应用解析](https://tech.meituan.com/2019/02/14/talk-about-java-magic-class-unsafe.html)
+
