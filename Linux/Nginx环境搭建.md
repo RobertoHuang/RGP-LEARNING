@@ -215,7 +215,7 @@ ExecReload=/bin/kill -s HUP $MAINPID
 - 配置`nginx_upstream_check_module`，开放监控页面
 
     ```shell
-    upstream www_server_pools {
+    upstream www-server-pools {
         server 192.168.190.131:80 weight=1;
         server 192.168.190.132:80 weight=1;
         # interval检测间隔时间，单位为毫秒
@@ -231,7 +231,7 @@ ExecReload=/bin/kill -s HUP $MAINPID
         server_name  www.xxx.com;
     
         location / {
-            proxy_pass http://www_server_pools;
+            proxy_pass http://www-server-pools;
         }
     
         location /status {
