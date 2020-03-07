@@ -91,7 +91,7 @@
 
 - 配置角色和权限对应关系，其中`Global roles`为全局权限，`Project roles`为项目权限
 
-    ![](images/Jenkins环境搭建/image-20200229203304363.png)
+    ![image-20200308020912100](images/Jenkins环境搭建/image-20200308020912100.png)
 
 - 添加完对应角色配置后，需要为用户分配对应角色
 
