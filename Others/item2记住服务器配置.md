@@ -109,79 +109,32 @@ syntax on
 
 ## 保存密码配置
 
-- 安装`expect`
+安装`AutoSSH`插件，从`https://github.com/islenbo`下载安装包，修改安装路径到`/usr/local/bin/autossh/`
 
-  ```shell
-  brew install expect
-  ```
+```shell
+#!/bin/bash
 
-  **如果遇到 man 目录的权限问题可以执行以下命令后在执行安装命令**
+cd $(dirname $0)
 
-  ```shell
-  sudo chown -R $(whoami) /usr/local/share/man/man5
-  ```
+mkdir -p /usr/local/bin/autossh/
+cp -f ./autossh /usr/local/bin/autossh/
 
-- 创建except脚本
+CONFIG_FILE=`cd /usr/local/bin/autossh/ && pwd`/config.json
+if [[ ! -f ${CONFIG_FILE} ]]; then
+    cp ./config.json /usr/local/bin/autossh/
+fi
 
-  ```shell
-  #!/usr/bin/expect
-  
-  set timeout 30
-  spawn ssh -p [lindex $argv 0] [lindex $argv 1]@[lindex $argv 2]
-  expect {
-          "(yes/no)?"
-          {send "yes\n";exp_continue}
-          "*assword:"
-          {send "[lindex $argv 3]\n"}
-  }
-  interact
-  ```
+HAS_ALIAS=`cat ~/.bash_profile | grep autossh | wc -l`
+if [[ ${HAS_ALIAS} -eq 0 ]]; then
+    echo "export PATH=$PATH:/usr/local/bin/autossh/" >> ~/.bash_profile
+fi
 
-  这里`[lindex $argv 0 $argv 1 $argv 2 $argv 3]`分别代表着 **端口号 用户名 服务器地址 密码** 4个参数
+source ~/.bash_profile
 
-  还需要给脚本执行权限
+/usr/local/bin/autossh/autossh
+```
 
-  ```shell
-  sudo chmod +x /usr/local/bin/iterm2login.sh
-  ```
-
-- 新建`profiles`
-
-  `iTerm2 -> Preferences -> Profiles`为每个服务器的连接，打上不同的`Tag`就自动按`Tag`分好组了
-
-  <div  align="center">    
-      <img src="images/item2记住密码配置.jpg" alt="item2记住密码配置" align=center />
-  </div>
-
-  另外还可以在`Colors`中设置每个打开`Tab`的颜色，多个项目同时操作也不怕搞错了
-
-  <div  align="center">    
-      <img src="images/item2记住密码配置2.jpg" alt="item2记住密码配置2" align=center />
-  </div>
-
-  <div  align="center">    
-      <img src="images/item2记住密码配置3.jpg" alt="item2记住密码配置3" align=center />
-  </div>
-
-- 最终效果
-
-  如图，使用起来方便多了
-
-  <div  align="center">    
-      <img src="images/item2记住密码配置4.jpg" align=center />
-  </div>
-
-- 保持回话
-
-  编辑或创建`~/.ssh/config`
-
-  ```shell
-  Host *
-  ServerAliveCountMax 3
-  ServerAliveInterval 300
-  # 3 是最多发送的次数，如果想一直保持连接，本项目可以不写
-  # 300 是发给服务端心跳的间隔，单位是秒，根据你自己的服务器情况设置
-  ```
+安装完成后需要检查`~/.bash_profile`文件是否需要重写配置一下，因为`export`顺序可能会影响到其他插件
 
 ## 常用分屏快捷键
 
