@@ -66,7 +66,7 @@
   metricRegistry.fastCompass(MetricName).record(DURATION, SUBCATEGORY);
   metricRegistry.histogram(MetricName, ReservoirType.SLIDING_TIME_WINDOW).update(METRIC_VALUE)
       
-  // 自定义count计算
+  // 自定义count计算 高位减1是因为dubbo metric record的时候默认记录次数是加1，所以这里要减1
   long compassFlow = (count << LogAppenderReporter.FASTCOMPASS_COUNT_OFFSET) - (1L << LogAppenderReporter.FASTCOMPASS_COUNT_OFFSET) + size;
   ```
 
@@ -278,3 +278,421 @@ public class ClientStatsManager {
 
 将指标值转成`Point`对象【指标名、`tag`、`当前时间戳`、`指标对应的值`】 - > 存入`OpenTSDB` -> 界面展示
 
+- `OpenTsdb`查询模块相关代码
+
+    - 指标数据格式化工具类
+
+        ```java
+        /**
+         * 〈指标数据格式化.〉
+         *
+         * @author HuangTaiHong
+         * @since 2020-03-16
+         */
+        public enum OpenTsdbDataFormat {
+            /**
+             * 指标数据格式化枚举
+             */
+            None {
+                @Override
+                Number format(Number... numbers) {
+                    if (numbers.length == 0) {
+                        throw new OpenTsdbDataFormatException("numbers count error");
+                    }
+                    return numbers[0];
+                }
+            },
+        
+            GigaNar {
+                @Override
+                Number format(Number... numbers) {
+                    if (numbers.length == 0) {
+                        throw new OpenTsdbDataFormatException("numbers count error");
+                    }
+                    if (numbers[0] == null) {
+                        return null;
+                    }
+                    return numbers[0].doubleValue() / (1024 * 1024 * 1024);
+                }
+            },
+        
+            MegaNar {
+                @Override
+                Number format(Number... numbers) {
+                    if (numbers.length == 0) {
+                        throw new OpenTsdbDataFormatException("numbers count error");
+                    }
+                    if (numbers[0] == null) {
+                        return null;
+                    }
+                    return numbers[0].doubleValue() / (1024 * 1024);
+                }
+            },
+        
+            KiloNar {
+                @Override
+                Number format(Number... numbers) {
+                    if (numbers.length == 0) {
+                        throw new OpenTsdbDataFormatException("numbers count error");
+                    }
+                    if (numbers[0] == null) {
+                        return null;
+                    }
+                    return numbers[0].doubleValue() / 1024;
+                }
+            },
+        
+            DiffNoneNar {
+                @Override
+                Number format(Number... numbers) {
+                    if (numbers.length < 2) {
+                        return null;
+                    }
+                    if (numbers[0] == null || numbers[1] == null) {
+                        return null;
+                    }
+                    return (numbers[1].doubleValue() - numbers[0].doubleValue());
+                }
+            },
+        
+            DiffGigaNar {
+                @Override
+                Number format(Number... numbers) {
+                    if (numbers.length < 2) {
+                        return null;
+                    }
+                    if (numbers[0] == null || numbers[1] == null) {
+                        return null;
+                    }
+                    return (numbers[1].doubleValue() - numbers[0].doubleValue()) / (1024 * 1024 * 1024);
+                }
+            },
+        
+            DiffMegaNar {
+                @Override
+                Number format(Number... numbers) {
+                    if (numbers.length < 2) {
+                        return null;
+                    }
+                    if (numbers[0] == null || numbers[1] == null) {
+                        return null;
+                    }
+                    return (numbers[1].doubleValue() - numbers[0].doubleValue()) / (1024 * 1024);
+                }
+            },
+        
+            DiffKiloNar {
+                @Override
+                Number format(Number... numbers) {
+                    if (numbers.length < 2) {
+                        return null;
+                    }
+                    if (numbers[0] == null || numbers[1] == null) {
+                        return null;
+                    }
+                    return (numbers[1].doubleValue() - numbers[0].doubleValue()) / 1024;
+                }
+            },
+        
+            DiffThousandNar {
+                @Override
+                Number format(Number... numbers) {
+                    if (numbers.length < 2) {
+                        return null;
+                    }
+                    if (numbers[0] == null || numbers[1] == null) {
+                        return null;
+                    }
+                    return (numbers[1].doubleValue() - numbers[0].doubleValue()) / 1000;
+                }
+            };
+        
+            abstract Number format(Number... numbers);
+        
+            public List<Number> formatDps(final Collection<Object> dataPointLists) {
+                final List<Number> result = Lists.newArrayList();
+                final Object[] values = dataPointLists.toArray();
+                for (int i = 0; i < values.length; i++) {
+                    result.add(this.format((Number) values[Math.max(0,i - 1)], (Number) values[i]));
+                }
+                return result;
+            }
+        }
+        ```
+
+        ```java
+        public class OpenTsdbDataFormatException extends RuntimeException{
+            public OpenTsdbDataFormatException(String message) {
+                super(message);
+            }
+        
+            public OpenTsdbDataFormatException(String message, Throwable cause) {
+                super(message, cause);
+            }
+        }
+        ```
+
+    - 聚合周期降采样表达式获取工具类
+
+        ```java
+        public class AggregationIntervalUtils {
+            public static final int M1 = 60;
+            public static final int M5 = M1 * 5;
+            public static final int M15 = M1 * 15;
+            public static final int M30 = M1 * 30;
+        
+            public static final int H1 = M1 * 60;
+            public static final int H6 = H1 * 6;
+            public static final int H12 = H1 * 12;
+        
+            public static final int D1 = H1 * 24;
+            public static final int D3 = D1 * 3;
+            public static final int D7 = D1 * 7;
+            public static final int D14 = D1 * 14;
+            public static final int D30 = D1 * 30;
+        
+            /**
+             * 获取时间节点.
+             *
+             * @param begin the begin
+             * @param end   the end
+             * @return the time nodes
+             * @author HuangTaiHong
+             * @since 2020.03.16 18:50:34
+             */
+            public static List<Long> getTimeNodes(long begin, long end) {
+                int interval = D1;
+                final long time = end - begin;
+                if (time < H6) {
+                    interval = M1;
+                } else if (time < D1) {
+                    interval = M5;
+                } else if (time < D7) {
+                    interval = M15;
+                } else if (time < D14) {
+                    interval = H1;
+                }
+                end = end / interval * interval;
+                begin = begin / interval * interval;
+                final List<Long> timeNodes = new ArrayList<>();
+                for (long i = begin; i <= end; i += interval) {
+                    timeNodes.add(i);
+                }
+                return timeNodes;
+            }
+        
+            /**
+             * 获取降采样表达式.
+             *
+             * @param begin 查询开始时间
+             * @param end   查询结束时间
+             * @return interval
+             * @author HuangTaiHong
+             * @since 2020.03.13 16:22:37
+             */
+            public static String getDownasmple(final long begin, final long end, final Aggregator aggregator) {
+                final String downSample;
+                final long time = end - begin;
+                if (time < H6) {
+                    // 小于6小时，按分钟进行降采样
+                    downSample = Granularity.M1.getName();
+                } else if (time < D1) {
+                    // 小于1天，按5分钟进行降采样
+                    downSample = Granularity.M5.getName();
+                } else if (time < D7) {
+                    // 小于7天，按15分钟进行降采样
+                    downSample = Granularity.M15.getName();
+                } else if (time < D14) {
+                    // 小于14天，按1小时进行降采样
+                    downSample = Granularity.H1.getName();
+                } else {
+                    downSample = Granularity.H24.getName();
+                }
+                return downSample + "-" + aggregator.getName() + "-null";
+            }
+        }
+        ```
+
+    - 请求响应实体类封装
+
+        ```java
+        @Data
+        @ApiModel(value = "客户端指标查询请求")
+        public class ClientMetricOpenTsdbRequest {
+            @NotNull
+            @ApiModelProperty("客户端指标名称")
+            private String[] metrics;
+        
+            @NotNull
+            @ApiModelProperty("开始时间")
+            private Long start;
+        
+            @NotNull
+            @ApiModelProperty("结束时间")
+            private Long end;
+        
+            @ApiModelProperty("查询的TAGS")
+            private Map<String, String> tags;
+        
+            @ApiModelProperty("搜索详情时表示展开哪个字段")
+            private String expand;
+        
+            @ApiModelProperty("可能的查询TAG条件，多个使用逗号隔开")
+            private String queryConditions;
+        
+            @NotNull
+            @ApiModelProperty("聚合方式")
+            private String aggregator;
+        
+            @NotNull
+            @ApiModelProperty("返回结果数据格式化")
+            private OpenTsdbDataFormat dataFormat;
+        }
+        
+        @Data
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @ApiModel("客户端指标OpenTsdb响应")
+        public class ClientMetricOpenTsdbResponse {
+            /**
+             * 时间节点信息
+             */
+            @ApiModelProperty("时间节点")
+            private List<Long> timeNodes;
+        
+            /**
+             * 指标映射关系
+             */
+            @ApiModelProperty("客户端指标")
+            private Map<String, List<ExpandTagMetricMapping>> metrics;
+        
+            /**
+             * 下拉框可选值
+             */
+            @ApiModelProperty("下拉框可选值")
+            private Map<String, Set<String>> conditionInfoMap;
+        }
+        
+        public class ExpandTagMetricMapping {
+            /**
+             * TAG值
+             */
+            private String tagValue;
+        
+            /**
+             * 指标值
+             */
+            private List<Number> metric;
+        }
+        
+        @GetMapping(value = "/opentsdb/metric")
+        @ApiOperation(value = "客户端指标采集响应")
+        public ClientMetricOpenTsdbResponse clientMetricUseOpenTsdb(final ClientMetricOpenTsdbRequest clientMetricOpenTsdbRequest) {
+            return this.clientMetricService.getMetricUseOpenTsdb(clientMetricOpenTsdbRequest);
+        }
+        ```
+
+    - 查询指标`Service`实现
+
+        ```java
+        public ClientMetricOpenTsdbResponse getMetricUseOpenTsdb(final ClientMetricOpenTsdbRequest clientMetricOpenTsdbRequest) {
+            // 获取阿里TSDB客户端连接
+            final TSDB tsdb = this.getOpenTSDB();
+            final String[] metrics = clientMetricOpenTsdbRequest.getMetrics();
+            // 获取下拉框可选值
+            final Map<String, Set<String>> conditionInfos = Maps.newConcurrentMap();
+            // 获取时间节点信息
+            final List<Long> timeNodes = AggregationIntervalUtils.getTimeNodes(clientMetricOpenTsdbRequest.getStart(), clientMetricOpenTsdbRequest.getEnd());
+            // 聚合查询
+            final boolean expand = StringUtils.isNotEmpty(clientMetricOpenTsdbRequest.getExpand());
+            final Map<String, List<ExpandTagMetricMapping>> expandTagMetricMappingMap = Maps.newConcurrentMap();
+            Arrays.stream(metrics).parallel().forEach(metric -> {
+                try {
+                    final Query query = this.buildSearchCondition(clientMetricOpenTsdbRequest, metric, null, null);
+                    final List<QueryResult> results = tsdb.query(query);
+                    expandTagMetricMappingMap.put(metric, results.stream().map(result -> new ExpandTagMetricMapping(expand ? result.getTags().get(clientMetricOpenTsdbRequest.getExpand()) : null, clientMetricOpenTsdbRequest.getDataFormat().formatDps(result.getDps().values()))).collect(Collectors.toList()));
+        
+                    final String queryConditions = clientMetricOpenTsdbRequest.getQueryConditions();
+                    if (StringUtils.isNotBlank(queryConditions)) {
+                        final String[] conditions = queryConditions.split(",");
+                        for (final String condition : conditions) {
+                            //【阿里TSDB支持dumpMeta】
+                            Set<String> tagValues = conditionInfos.get(condition);
+                            if (tagValues == null) {
+                                synchronized (this) {
+                                    if (tagValues == null) {
+                                        tagValues = new HashSet<>();
+                                        conditionInfos.put(condition, tagValues);
+                                    }
+                                }
+                            }
+                            tagValues.addAll(this.getConditionValues(clientMetricOpenTsdbRequest, metric, condition));
+                        }
+                    }
+                } catch (final Exception e) {
+                    log.error("failed to query opentsdb metric. cause by: {}", e.getMessage());
+                }
+            });
+            return new ClientMetricOpenTsdbResponse(timeNodes, expandTagMetricMappingMap, conditionInfos);
+        }
+        
+        /**
+         * 获取下拉框可选值.
+         *
+         * @param clientMetricOpenTsdbRequest the client metric open tsdb request
+         * @param metric                      the metric
+         * @param condition                   the condition
+         * @return the condition values
+         * @author HuangTaiHong
+         * @since 2020.03.16 21:29:04
+         */
+        private List<String> getConditionValues(final ClientMetricOpenTsdbRequest clientMetricOpenTsdbRequest, final String metric, final String condition) {
+            List<String> tagValues = Lists.newArrayList();
+            final Query query = this.buildSearchCondition(clientMetricOpenTsdbRequest, metric, condition, Aggregator.NONE);
+            try {
+                final List<QueryResult> results = this.getOpenTSDB().query(query);
+                tagValues = results.stream().map(result -> result.getTags().get(condition)).collect(Collectors.toList());
+            } catch (final Exception e) {
+                log.error("failed to query opentsdb metric. cause by: {}", e.getMessage());
+            }
+            return tagValues;
+        }
+        
+        /**
+         * 构建查询表达式.
+         *
+         * @param clientMetricOpenTsdbRequest the client metric open tsdb request
+         * @param metric                      the metric
+         * @param specialExpand               用来替换clientMetricRequest中的展开条件
+         * @param specialAggregator           用来替换clientMetricRequest中的聚合方式
+         * @return the query
+         * @author HuangTaiHong
+         * @since 2020.03.16 21:53:46
+         */
+        private Query buildSearchCondition(final ClientMetricOpenTsdbRequest clientMetricOpenTsdbRequest, final String metric, final String specialExpand, final Aggregator specialAggregator) {
+            final String expand = specialExpand == null ? clientMetricOpenTsdbRequest.getExpand() : specialExpand;
+            final Aggregator aggregator = specialAggregator == null ? Aggregator.getEnum(clientMetricOpenTsdbRequest.getAggregator()) : specialAggregator;
+            // 查询时间范围
+            final Query.Builder builder = Query.timeRange(clientMetricOpenTsdbRequest.getStart(), clientMetricOpenTsdbRequest.getEnd());
+            // 聚合方式
+            final SubQuery.Builder subQueryBuilder = SubQuery.metric(metric).aggregator(aggregator);
+            // 指定Tag查询
+            final Map<String, String> tags = clientMetricOpenTsdbRequest.getTags();
+            if (MapUtils.isNotEmpty(tags)) {
+                for (final Map.Entry<String, String> entry : tags.entrySet()) {
+                    subQueryBuilder.tag(entry.getKey(), entry.getValue());
+                }
+            }
+            // 指标展开维度
+            if (StringUtils.isNotEmpty(expand)) {
+                subQueryBuilder.tag(expand, "*");
+            }
+            // 按时间进行降采样
+            if (aggregator != Aggregator.NONE) {
+                subQueryBuilder.downsample(AggregationIntervalUtils.getDownasmple(clientMetricOpenTsdbRequest.getStart(), clientMetricOpenTsdbRequest.getEnd(), aggregator));
+            }
+            return builder.sub(subQueryBuilder.build()).build();
+        }
+        ```
+
+        
