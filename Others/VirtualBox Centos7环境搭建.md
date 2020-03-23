@@ -6,9 +6,14 @@
 ## NAT网络配置
 网卡1配置如下
 
-![网卡1配置](https://raw.githubusercontent.com/RobertoHuang/RGP-NOTES/master/00.%E7%9B%B8%E5%85%B3%E5%9B%BE%E7%89%87/%E8%BD%AF%E4%BB%B6%E9%85%8D%E7%BD%AE%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/%E7%BD%91%E5%8D%A11%E9%85%8D%E7%BD%AE.png)
+![img](images/VirtualBox Centos7环境搭建/网卡1配置.png)
 
-修改`/etc/sysconfig/network-scripts/ifcfg-enp0s3`的配置【`将ONBOOT改为yes、BOOTPROTO改为dhcp`】重启网络(`service network restart`)即可`ping`通外网，修改后的配置文件如下
+修改`/etc/sysconfig/network-scripts/ifcfg-enp0s3`的配置
+
+【`将ONBOOT改为yes、BOOTPROTO改为dhcp`】
+
+重启网络(`service network restart`)即可`ping`通外网，修改后的配置文件如下
+
 ```
 TYPE=Ethernet
 BOOTPROTO=dhcp
@@ -30,9 +35,16 @@ ONBOOT=yes
 ## HOST ONLY网络配置
 网卡2配置如下
 
-![网卡2配置](https://raw.githubusercontent.com/RobertoHuang/RGP-NOTES/master/00.%E7%9B%B8%E5%85%B3%E5%9B%BE%E7%89%87/%E8%BD%AF%E4%BB%B6%E9%85%8D%E7%BD%AE%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/%E7%BD%91%E5%8D%A12%E9%85%8D%E7%BD%AE.png)
+![img](images/VirtualBox Centos7环境搭建/网卡2配置.png)
 
-配置静态`IP`地址(即虚拟机`IP`地址不会随宿主机`IP`改变而发生改变)，修改`/etc/sysconfig/network-scripts/ifcfg-enp0s8`的配置【`将BOOTPROTO改为static，IPADDR可以自己指定，添加NETMASK配置`】，最后重启网络(`service network restart`)，修改后的配置文件如下
+配置静态`IP`地址(即虚拟机`IP`地址不会随宿主机`IP`改变而发生改变)
+
+修改`/etc/sysconfig/network-scripts/ifcfg-enp0s8`的配置
+
+【`将BOOTPROTO改为static，IPADDR可以自己指定，添加NETMASK配置`】
+
+最后重启网络(`service network restart`)，修改后的配置文件如下
+
 ```
 TYPE=Ethernet
 BOOTPROTO=static
