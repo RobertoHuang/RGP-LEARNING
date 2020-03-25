@@ -129,3 +129,74 @@
 ## ElasticSearch简单使用
 
 其实本来是计划写一下`ElasticSearch`的操作文档的，看了很久的官方文档。但是这玩意吧骚操作实在是多(各种`API`)，如果要写博客的话得花很多时间(可能还写不明白)，想了想还是等用到的时候去查[官方文档](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)吧
+
+## ElasticSearch白金版破解
+
+- 覆盖`x-pack-core`包
+
+    ```
+    使用下载好的x-pack-core-6.4.3.jar替换掉原有的jar包
+    
+    cd /usr/local/elasticsearch/elasticsearch-6.4.3/modules/x-pack-core
+    ```
+
+- 去官网申请`license`证书
+
+    ```
+    https://license.elastic.co/registration
+    ```
+
+    邮箱认真写用来接收`JSON`文件的，`country`写`china`。点击申请后邮箱马上会收到一个邮件
+
+- 修改申请到的证书
+
+    `"type":"basic"`替换为`"type":"platinum"`基础版变更为铂金版
+
+    `"expiry_date_in_millis":1561420799999`替换为`"expiry_date_in_millis":3107746200000`1年变50年
+
+    好好保存，修改后的文件可以重复使用到其它`ElasticSearch`服务器
+
+- 通过`Kibana`上传修改后的证书
+
+    上传前准备，打开`elasticsearch.yml`配置文件加入`xpack.security.enabled: false`
+
+    重启`elasticsearch服务` 和 `kibana服务`，在`Management`页面对证书进行上传，上传成功后出现如下提示
+
+    ![image-20200325132635687](images/ElasticSearch学习笔记/image-20200325132635687.png)
+
+- 开启`ElasticSearch`登入功能
+
+    - 修改`elasticsearch.yml`配置，添加如下两行
+
+        ```
+        xpack.security.enabled: true
+        xpack.security.transport.ssl.enabled: true
+        ```
+
+    - 重置登陆权限密码
+
+        ```
+        bin/elasticsearch-setup-passwords interactive
+        ```
+
+        ![image-20200325134151991](images/ElasticSearch学习笔记/image-20200325134151991.png)
+
+    - 修改`Kibana`配置，在`kibana.yml`下添加如下两行
+
+        ```
+        elasticsearch.username: elastic
+        elasticsearch.password: {你修改的password}
+        ```
+
+    - 重启`ElasticSearch`和`Kibana`服务，出现登录界面说明配置成功
+
+- 关于`x-pack`角色的说明
+
+    - 集群权限
+
+        ![image-20200325144600961](images/ElasticSearch学习笔记/image-20200325144600961.png)
+
+    - 索引权限
+
+        ![image-20200325144621976](images/ElasticSearch学习笔记/image-20200325144621976.png)
+

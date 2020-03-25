@@ -72,6 +72,11 @@ git push 将本地分支修改推送到远程分支
 
 ## 分支管理相关命令
 
+```
+# 更新本地remote分支信息
+git remote update origin -p
+```
+
 ```reStructuredText
 git branch <branch ame> [commit id] 创建分支
 git branch -av 显示所有分支 v:显示提交信息
