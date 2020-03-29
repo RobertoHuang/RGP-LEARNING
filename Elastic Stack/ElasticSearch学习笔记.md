@@ -130,6 +130,55 @@
 
 其实本来是计划写一下`ElasticSearch`的操作文档的，看了很久的官方文档。但是这玩意吧骚操作实在是多(各种`API`)，如果要写博客的话得花很多时间(可能还写不明白)，想了想还是等用到的时候去查[官方文档](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)吧
 
+### Mapping相关
+
+- 查看索引`Mapping`
+
+    ```
+    GET index/_mapping
+    ```
+
+### 重建索引
+
+- 创建好新的索引
+
+- 使用`reindex`进行索引数据转移
+
+    ```
+    POST _reindex
+    {
+      "source": {
+        "index": "question"
+      },
+      "dest": {
+        "index": "question_new"
+      }
+    }
+    ```
+
+- 等待`reindex`完成后`question_new`就结构就就是你想要的`mapping`了，使用 `alias`别名功能来切换
+
+    ```
+    POST _aliases
+    {
+      "actions": [
+        {
+          "add": {
+            "index": "question_new",
+            "alias": "question"
+          }
+        },
+        {
+          "remove_index": {
+            "index": "question"
+          }
+        }
+      ]
+    }
+    ```
+
+    【新增别名删除旧的索引】这个动作是个原子操作，所以对用户是无感知的【至此完成索引的重建工作】
+
 ## ElasticSearch白金版破解
 
 - 覆盖`x-pack-core`包
