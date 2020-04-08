@@ -56,6 +56,8 @@
 
 `sudo`执行命令相关的可参考博客[sudo配置文件/etc/sudoers详解及实战用法](https://blog.csdn.net/Field_Yang/article/details/51547804)，作为`Java`开发很少会主动去修改
 
+`last`可以查看用户登陆历史记录，方便排查问题【主要是跟踪误操作责任人】
+
 ## 文件权限
 
 ![image-20200301131206152](images/作为Java开发应该要掌握的Linux命令/image-20200301131206152.png)
@@ -132,6 +134,14 @@ netstat -anp | grep ':80'
 ## 软件包管理
 
 `Yum`是一个`Shell`前端软件包管理器。基于`RPM`包管理能够从指定的服务器自动下载`RPM`包并且安装，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。【使用国内`Yum`镜像源配置可参考:[阿里巴巴开源镜像站](https://developer.aliyun.com/mirror/centos?spm=a2c6h.13651102.0.0.3e221b11htIpC3)】
+
+## 服务器字体安装
+
+- `yum install -y fontconfig mkfontscale`
+- 查看当前系统已安装的字体库`fc-list`
+- 创建字体库目录`mkdir -p /usr/share/fonts/chinese`
+- 拷贝字体文件至创建的字体库目录`cp SIMSUN.TTC /usr/share/fonts/chinese`
+- 更新缓存使生效`fc-cache -fv`【关于字体可在网上下载到】
 
 ## 命令行小技巧
 

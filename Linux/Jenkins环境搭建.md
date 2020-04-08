@@ -101,6 +101,93 @@
 
 具体可参考关于`Jenkins`权限管理读这一篇就够用了:[https://www.cnblogs.com/kazihuo/p/9022899.html](https://www.cnblogs.com/kazihuo/p/9022899.html)
 
+## 构建邮件通知配置
+
+需要安装插件`Eamil Extension Plugin`
+
+- 用`Jenkins`内置默认的邮件通知配置测试有效性
+
+    点击`系统管理 > 系统设置`，找到`Jenkins Locaction`项填入`Jenkins URL`和系统管理员邮件地址，系统管理员邮件地址一定要配置，否则发不了邮件通知。因为邮件通知都是由系统管理员的邮箱发出来的
+
+    ![image-20200402205249720](images/Jenkins环境搭建/image-20200402205249720.png)
+
+- 找到邮件通知项，填入`SMTP`服务器信息及用户名、密码等认证信息，选中通过发送测试邮件测试配置，点击 `Testconfiguration`按钮，如果如图所示则表示配置成功
+
+    ![image-20200402212241350](images/Jenkins环境搭建/image-20200402212241350.png)
+
+- 这时在邮件中应该能看到刚刚我们发送的测试邮件啦，至此，内置邮件配置的作用已完成
+
+- 安装插件，同样点击`系统管理 > 系统设置`，找到`Extension E-mail Notification`项进行全局配置
+
+    基本信息:填写上述测试并正确的邮件信息
+
+    `Default Content Type`默认内容类型，选择`HTML(text/html) Default Subject`
+
+    默认邮件主题`Default Content`默认内容，此处我填写的是一段`HTML`文本
+
+    `Default Triggers`:选择`Failure(Any)`和`Success`即构建成功或失败的时候发送邮件
+
+    ![image-20200402215052399](images/Jenkins环境搭建/image-20200402215052399.png)
+
+    ![image-20200402215127069](images/Jenkins环境搭建/image-20200402215127069.png)
+
+    `Default Recipients`需要填入默认需要发送通知的邮件账户，多个账户以逗号隔开
+
+    ![image-20200402215149983](images/Jenkins环境搭建/image-20200402215149983.png)
+
+    邮件默认配置内容如下
+
+    ```html
+    <!DOCTYPE html>  
+    <html>  
+    <head>  
+      <meta charset="UTF-8">  
+      <title>${ENV, var="JOB_NAME"}-第${BUILD_NUMBER}次构建日志</title>  
+    </head>  
+    
+    <body leftmargin="8" marginwidth="0" topmargin="8" marginheight="4" offset="0">  
+    <table width="95%" cellpadding="0" cellspacing="0" style="font-size: 11pt; font-family: Tahoma, Arial, Helvetica, sans-serif">  
+    <tr>  
+      <td><br />  
+        <b><font color="#0B610B">构建信息</font></b>  
+        <hr size="2" width="100%" align="center" />
+      </td>  
+    </tr>  
+    <tr>  
+      <td>  
+        <ul>  
+          <li>项目名称 ：${PROJECT_NAME}</li>  
+          <li>构建状态 ：${BUILD_STATUS}</li>
+          <li>构建编号 ：第${BUILD_NUMBER}次构建</li>  
+          <li>触发原因 ：${CAUSE}</li>  
+          <li>构建日志 ：<a href="${BUILD_URL}console">${BUILD_URL}console</a></li>  
+          <li>构建URL ：<a href="${BUILD_URL}">${BUILD_URL}</a></li>  
+          <li>工作目录 ：<a href="${PROJECT_URL}ws">${PROJECT_URL}ws</a></li>  
+          <li>项目URL ：<a href="${PROJECT_URL}">${PROJECT_URL}</a></li>  
+        </ul>  
+      </td>  
+    </tr>  
+    <tr>  
+      <td><b><font color="#0B610B">变更集</font></b>  
+        <hr size="2" width="100%" align="center" />
+      </td>  
+    </tr>  
+    
+    <tr>  
+      <td>${JELLY_SCRIPT,template="html"}<br/>  
+        <hr size="2" width="100%" align="center" />
+      </td>  
+    </tr>  
+    
+    </table>  
+    </body>  
+    </html>  
+    ```
+    
+- **项目配置** 进入到具体的项目配置界面点击"配置"，在配置界面点击"增加构建后操作步骤"，选择`Editable Email Notification`在设置中保存默认就可以啦。可以在`Advanced Settings`中针对项目进行个性化设置
+
+- 更多关于邮件通知配置可参考:[Jenkins邮件通知配置](https://github.com/whihail/AutoArchive/wiki/%E5%AE%A2%E6%88%B7%E7%AB%AFJenkins%E8%87%AA%E5%8A%A8%E6%9E%84%E5%BB%BA%E6%8C%87%E5%8D%97%E4%B9%8B%E9%82%AE%E4%BB%B6%E9%80%9A%E7%9F%A5)和[Jenkins邮件通知插件配置项说明](https://blog.csdn.net/allenchan3721/article/details/84194886)
+
 ## Vue项目自动化部署配置
 
 - `Jenkins`配置
