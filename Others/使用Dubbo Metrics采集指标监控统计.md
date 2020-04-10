@@ -20,7 +20,7 @@
   // JVM内存指标
   metricRegistry.register(MetricName.build("jvm.mem").level(level), new MemoryUsageGaugeSet());
   // JVM GC相关指标
-  metricRegistry.register(MetricName.build("jvm.gc ").level(level), new GarbageCollectorMetricSet());
+  metricRegistry.register(MetricName.build("jvm.gc").level(level), new GarbageCollectorMetricSet());
   // JVM堆外内存指标
   metricRegistry.register(MetricName.build("jvm.buffer_pool").level(level), new BufferPoolMetricSet(ManagementFactory.getPlatformMBeanServer()));
   // JVM线程相关指标
@@ -53,6 +53,8 @@
 
 ## 自定义指标
 
+自定义指标主要流程【埋点 > `Report`将指标数据上报存储 > 通过界面对数据进行展示】
+
 - 初始化指标注册器
 
   ```java
@@ -64,159 +66,58 @@
   ```java
   metricRegistry.counter(MetricName).inc();
   metricRegistry.fastCompass(MetricName).record(DURATION, SUBCATEGORY);
+  // SLIDING_TIME_WINDOW为滑动时间窗口Histogram数据采集
   metricRegistry.histogram(MetricName, ReservoirType.SLIDING_TIME_WINDOW).update(METRIC_VALUE)
       
   // 自定义count计算 高位减1是因为dubbo metric record的时候默认记录次数是加1，所以这里要减1
   long compassFlow = (count << LogAppenderReporter.FASTCOMPASS_COUNT_OFFSET) - (1L << LogAppenderReporter.FASTCOMPASS_COUNT_OFFSET) + size;
   ```
 
-- 初始化`Reporter`输出指标信息
+- 初始化`Reporter`输出指标信息，以下展示为自定义`Reporter`数据上报
 
   ```java
-  public class SimpleScheduledReporter {
-      private static final int GENERAL_MAX_SAMPLE_NUM = 2;
+  public class OpenTsdbReporter extends MetricManagerReporter {
       private static final int CRITICAL_MAX_SAMPLE_NUM = 10;
+      private static final int GENERAL_MAX_SAMPLE_NUM = 2;
   
       /**
        * FastCompass实现中的数字分隔偏移量，后半段数字所占位数
        */
       public static final int FASTCOMPASS_COUNT_OFFSET = 38;
-  
       private static final long FASTCOMPASS_MASK_OFFSET = (1L << FASTCOMPASS_COUNT_OFFSET) - 1;
   
-      private final MetricFilter filter;
-      private final MetricRegistry registry;
+      private final Map<String, String> globalTags;
+      private final Clock clock;
+      private final OpenTsdbClient openTsdbClient;
+      private final HashMap<MetricLevel, Long> lastTimestamps;
+      private final MetricsCollectPeriodConfig metricsReportPeriodConfig;
   
-      private final Clock clock = Clock.defaultClock();
-  
-      private final MetricsCollectPeriodConfig metricsReportPeriodConfig = new MetricsCollectPeriodConfig();
-  
-      private final HashMap<MetricLevel, Long> lastTimestamps = new HashMap<>(MetricLevel.values().length);
-  
-      private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-  
-      private static final Logger LOGGER = LoggerFactory.getLogger(SimpleScheduledReporter.class);
-  
-      public SimpleScheduledReporter(final MetricFilter filter, final MetricRegistry registry) {
-          this.filter = filter;
-          this.registry = registry;
-      }
-  
-      public void start(final long period, final TimeUnit unit) {
-          executor.scheduleWithFixedDelay(new Runnable() {
+      /**
+       * Instantiates a new Open tsdb reporter.
+       *
+       * @param metricManager  metricManager
+       * @param openTsdbClient the open tsdb client
+       * @param globalTags     额外加入每个metric的tag
+       * @param clock          clock
+       * @author HuangTaiHong
+       * @since 2020.03.31 15:52:15
+       */
+      public OpenTsdbReporter(final IMetricManager metricManager, final OpenTsdbClient openTsdbClient, final Map<String, String> globalTags, final Clock clock) {
+          this(metricManager, openTsdbClient, globalTags, new MetricFilter() {
               @Override
-              public void run() {
-                  try {
-                      report();
-                  } catch (final Throwable e) {
-                      LOGGER.error("Throwable RuntimeException thrown from {}#report. Exception was suppressed.", SimpleScheduledReporter.this.getClass().getSimpleName(), e);
-                  }
+              public boolean matches(final MetricName name, final Metric metric) {
+                  return name.getMetricLevel() == MetricLevel.TRIVIAL;
               }
-          }, period, period, unit);
+          }, clock, new MetricsCollectPeriodConfig(), new TimeMetricLevelFilter());
       }
   
-      public void report() {
-          synchronized (this) {
-              report(registry.getGauges(filter), registry.getCounters(filter), registry.getHistograms(filter), registry.getMeters(filter), registry.getTimers(filter), registry.getCompasses(), registry.getFastCompasses());
-          }
-      }
-  
-      public void report(final SortedMap<MetricName, Gauge> gauges, final SortedMap<MetricName, Counter> counters, final SortedMap<MetricName, Histogram> histograms, final SortedMap<MetricName, Meter> meters, final SortedMap<MetricName, Timer> timers, final SortedMap<MetricName, Compass> compass, final SortedMap<MetricName, FastCompass> fastCompass) {
-          final long now = this.clock.getTime();
-          // reportOtherMetrics();
-          reportCounter(counters, now);
-          reportHistograms(histograms, now);
-          reportFastCompass(fastCompass, now);
-          for (final MetricLevel level : MetricLevel.values()) {
-              final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
-              final long endTime = (now / interval - 1) * interval;
-              this.lastTimestamps.put(level, endTime);
-          }
-      }
-  
-      private void reportCounter(final SortedMap<MetricName, Counter> counters, final long now) {
-          counters.entrySet().stream().forEach(entry -> {
-              final Counter counter = entry.getValue();
-              final MetricName metricName = entry.getKey();
-              if (!(counter instanceof BucketCounter)) {
-                  // doBaseCountReport();
-              } else {
-                  doReportBucketCounter(metricName, ((BucketCounter) counter), now);
-              }
-          });
-      }
-  
-      private void reportFastCompass(final SortedMap<MetricName, FastCompass> fastCompass, final long now) {
-          fastCompass.entrySet().forEach(entry -> doReportFastCompass(entry.getKey(), entry.getValue(), now));
-      }
-  
-      private void reportHistograms(final SortedMap<MetricName, Histogram> histograms, final long now) {
-          for (final Map.Entry<MetricName, Histogram> entry : histograms.entrySet()) {
-              final MetricName metricName = entry.getKey();
-              final Long lastReport = MapUtils.getLong(this.lastTimestamps, metricName.getMetricLevel(), 0L);
-              final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(metricName.getMetricLevel()));
-              if (now - lastReport > interval) {
-                  final Histogram histogram = entry.getValue();
-                  doReportHistogram(metricName, histogram, now);
-              }
-          }
-      }
-  
-      private void doReportBucketCounter(final MetricName metricName, final BucketCounter counter, final long now) {
-          final Map<Long, Long> bucketCounts = counter.getBucketCounts();
-          // 计算Report时间间隔
-          final MetricLevel level = metricName.getMetricLevel();
-          final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
-          // 计算开始时间和结束时间
-          final long endTime = (now / interval - 1) * interval;
-          final long startTime = sampleReduce(MapUtils.getLong(this.lastTimestamps, level, 0L) + interval, endTime, interval, level);
-          // 开始循环report指标数据
-          for (long time = startTime; time <= endTime; time = time + interval) {
-              final Long count = bucketCounts.get(time);
-              if (count == null) {
-                  continue;
-              } else {
-                  // reportToOpentsdb(metricName.getKey(), metricName.getTags(), time, count);
-              }
-          }
-      }
-  
-      private void doReportFastCompass(final MetricName metricName, final FastCompass fastCompass, final long now) {
-          // 计算Report时间间隔
-          final MetricLevel level = metricName.getMetricLevel();
-          final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
-          // 计算开始时间和结束时间
-          final long endTime = (now / interval - 1) * interval;
-          final long startTime = sampleReduce(MapUtils.getLong(this.lastTimestamps, level, 0L) + interval, endTime, interval, level);
-          // 开始循环report指标数据
-          final Map<String, Map<Long, Long>> statsByCategory = fastCompass.getCountAndRtPerCategory(startTime);
-          for (long time = startTime; time <= endTime; time = time + interval) {
-              for (final Map.Entry<String, Map<Long, Long>> entry : statsByCategory.entrySet()) {
-                  final String category = entry.getKey();
-                  final Map<Long, Long> statsByTime = entry.getValue();
-                  final Long compass = statsByTime.get(time);
-                  if (compass != null) {
-                      /**
-                       *  ------------------------------------------
-                       * |   1 bit    |     25 bit   |     38 bit |
-                       * | signed bit |  total count |   total rt |
-                       * ------------------------------------------
-                       **/
-                      final long count = getFastCompassCount(compass);
-                      if (count > 0) {
-                          final long sum = getFastCompassSum(compass);
-                          // reportToOpenTSDB(metricName.getKey(), metricName.getTags(), time, sum / (double) count);
-                      }
-                  }
-              }
-          }
-      }
-  
-      private void doReportHistogram(final MetricName metricName, final Histogram histogram, final long now) {
-          final Snapshot snapshot = histogram.getSnapshot();
-          // this.reportToOpenTSDB(metricName.getKey() + ".min", metricName.getTags(), now, snapshot.getMin());
-          // this.reportToOpenTSDB(metricName.getKey() + ".max", metricName.getTags(), now, snapshot.getMax());
-          // this.reportToOpenTSDB(metricName.getKey() + ".avg", metricName.getTags(), now, snapshot.getMean());
+      private OpenTsdbReporter(final IMetricManager metricManager, final OpenTsdbClient openTsdbClient, final Map<String, String> globalTags, final MetricFilter filter, final Clock clock, final MetricsCollectPeriodConfig metricsReportPeriodConfig, final TimeMetricLevelFilter timeFilter) {
+          super(metricManager, "OPEN-TSDB-REPORTER", filter, timeFilter, TimeUnit.SECONDS, TimeUnit.NANOSECONDS);
+          this.globalTags = globalTags;
+          this.clock = clock;
+          this.openTsdbClient = openTsdbClient;
+          this.metricsReportPeriodConfig = metricsReportPeriodConfig;
+          this.lastTimestamps = new HashMap<>(MetricLevel.values().length);
       }
   
       public static long getFastCompassCount(final long num) {
@@ -242,41 +143,204 @@
           // 返回可靠的report startTime
           return (sampleNum > maxSampleNum) ? endTime - interval * maxSampleNum : startTime;
       }
+  
+      @Override
+      public void report(final Map<MetricName, Gauge> gauges, final Map<MetricName, Counter> counters, final Map<MetricName, Histogram> histograms, final Map<MetricName, Meter> meters, final Map<MetricName, Timer> timers, final Map<MetricName, Compass> compasses, final Map<MetricName, FastCompass> fastCompasses) {
+          final long now = this.clock.getTime();
+          this.doReportFastCompasses(now, fastCompasses);
+          this.doReportCounters(now, counters);
+          this.doReportMeters(now, meters);
+          this.doReportTimes(now, timers);
+          for (final MetricLevel level : MetricLevel.values()) {
+              final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
+              final long endTime = (now / interval - 1) * interval;
+              this.lastTimestamps.put(level, endTime);
+          }
+      }
+  
+      /**
+       * 上报FastCompass相关指标.
+       *
+       * @param now           the now
+       * @param fastCompasses the fast compasses
+       * @author HuangTaiHong
+       * @since 2020.04.09 23:28:12
+       */
+      private void doReportFastCompasses(final long now, final Map<MetricName, FastCompass> fastCompasses) {
+          for (final Map.Entry<MetricName, FastCompass> entry : fastCompasses.entrySet()) {
+              final FastCompass fastCompassMetricWithTimeInterval = entry.getValue();
+              final MetricName metricName = entry.getKey();
+              final MetricLevel level = entry.getKey().getMetricLevel();
+              assert level == MetricLevel.TRIVIAL;
+              final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
+              final long endTime = (now / interval - 1) * interval;
+              final long startTime = sampleReduce(MapUtils.getLong(this.lastTimestamps, level, 0L) + interval, endTime, interval, level);
+  
+              final Map<String, Map<Long, Long>> statsByCategory = fastCompassMetricWithTimeInterval.getCountAndRtPerCategory(startTime);
+              for (long time = startTime; time <= endTime; time = time + interval) {
+                  for (final Map.Entry<String, Map<Long, Long>> statsByCategoryEntry : statsByCategory.entrySet()) {
+                      final String category = statsByCategoryEntry.getKey();
+                      final Map<Long, Long> statsByTime = statsByCategoryEntry.getValue();
+                      final Long compass = statsByTime.get(time);
+                      if (compass != null) {
+                          /**
+                           *  ------------------------------------------
+                           * |   1 bit    |     25 bit   |     38 bit |
+                           * | signed bit |  total count |   total rt |
+                           * ------------------------------------------
+                           **/
+                          final long count = getFastCompassCount(compass);
+                          if (count > 0) {
+                              final long sum = getFastCompassSum(compass);
+                              final String fullName = metricName.getKey() + MetricName.SEPARATOR + category;
+                              final Point sumPoint = Point.metric(fullName + MetricName.SEPARATOR + "sum").tag(this.globalTags).tag(metricName.getTags()).timestamp(time).value(sum).build();
+                              this.openTsdbClient.offerMetricToOpenTsdb(sumPoint);
+  
+                              final Point countPoint = Point.metric(fullName + MetricName.SEPARATOR + "count").tag(this.globalTags).tag(metricName.getTags()).timestamp(time).value(count).build();
+                              this.openTsdbClient.offerMetricToOpenTsdb(countPoint);
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  
+      /**
+       * 上报Count相关指标.
+       *
+       * @param nowTime  the now time
+       * @param counters the counters
+       * @author HuangTaiHong
+       * @since 2019.12.24 14:53:47
+       */
+      private void doReportCounters(final long nowTime, final Map<MetricName, Counter> counters) {
+          for (final Map.Entry<MetricName, Counter> entry : counters.entrySet()) {
+              final Counter counter = entry.getValue();
+              final MetricName metricName = entry.getKey();
+              final MetricLevel level = metricName.getMetricLevel();
+              assert level == MetricLevel.TRIVIAL;
+              if (counter instanceof BucketCounter) {
+                  final BucketCounter bucketCounter = (BucketCounter) counter;
+                  final Map<Long, Long> bucketCountMetricWithTimeInterval = bucketCounter.getBucketCounts();
+                  final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
+                  final long endTime = (nowTime / interval - 1) * interval;
+                  final long startTime = sampleReduce(MapUtils.getLong(this.lastTimestamps, level, 0L) + interval, endTime, interval, level);
+                  for (long time = startTime; time <= endTime; time = time + interval) {
+                      final Long bucketCountMetric = bucketCountMetricWithTimeInterval.get(time);
+                      if (bucketCountMetric != null) {
+                          final Point point = Point.metric(metricName.getKey()).tag(this.globalTags).tag(metricName.getTags()).timestamp(time).value(bucketCountMetric).build();
+                          this.openTsdbClient.offerMetricToOpenTsdb(point);
+                      }
+                  }
+              }
+          }
+      }
+  
+      /**
+       * 上报Meter相关指标.
+       *
+       * @param nowTime the now time
+       * @param meters  the meters
+       * @author HuangTaiHong
+       * @since 2020.04.09 19:24:31
+       */
+      private void doReportMeters(final long nowTime, final Map<MetricName, Meter> meters) {
+          for (final Map.Entry<MetricName, Meter> entry : meters.entrySet()) {
+              final MetricLevel level = entry.getKey().getMetricLevel();
+              assert level == MetricLevel.TRIVIAL;
+              final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
+              final long endTime = (nowTime / interval - 1) * interval;
+              final long startTime = sampleReduce(MapUtils.getLong(this.lastTimestamps, level, 0L) + interval, endTime, interval, level);
+              final MetricName metricName = entry.getKey();
+              final Map<Long, Long> meterMetricWithTimeInterval = entry.getValue().getInstantCount(startTime);
+              for (long time = startTime; time <= endTime; time = time + interval) {
+                  final Long meterMetric = meterMetricWithTimeInterval.get(startTime);
+                  if (meterMetric != null) {
+                      final Point point = Point.metric(metricName.getKey()).tag(this.globalTags).tag(metricName.getTags()).timestamp(time).value(meterMetric).build();
+                      this.openTsdbClient.offerMetricToOpenTsdb(point);
+                  }
+              }
+          }
+      }
+  
+      /**
+       * 上报Timers相关指标.
+       *
+       * @param nowTime the now time
+       * @param timers  the timers
+       * @author HuangTaiHong
+       * @since 2020.04.09 23:23:11
+       */
+      private void doReportTimes(final long nowTime, final Map<MetricName, Timer> timers) {
+          for (final Map.Entry<MetricName, Timer> entry : timers.entrySet()) {
+              final MetricLevel level = entry.getKey().getMetricLevel();
+              assert level == MetricLevel.TRIVIAL;
+              final long interval = TimeUnit.SECONDS.toMillis(this.metricsReportPeriodConfig.period(level));
+              final long endTime = (nowTime / interval - 1) * interval;
+              final long startTime = sampleReduce(MapUtils.getLong(this.lastTimestamps, level, 0L) + interval, endTime, interval, level);
+              final MetricName metricName = entry.getKey();
+              // 上报Meter数据
+              final Map<Long, Long> meterMetricWithTimeInterval = entry.getValue().getInstantCount(startTime);
+              for (long time = startTime; time <= endTime; time = time + interval) {
+                  final Long meterMetric = meterMetricWithTimeInterval.get(startTime);
+                  if (meterMetric != null) {
+                      final Point point = Point.metric(metricName.getKey()).tag(this.globalTags).tag(metricName.getTags()).timestamp(time).value(meterMetric).build();
+                      this.openTsdbClient.offerMetricToOpenTsdb(point);
+                  }
+              }
+  
+              if (endTime - startTime >= interval) {
+                  // 上报Histogram数据
+                  final Snapshot snapshot = entry.getValue().getSnapshot();
+                  this.openTsdbClient.offerMetricToOpenTsdb(Point.metric(metricName.getKey() + ".min").tag(this.globalTags).tag(metricName.getTags()).timestamp(endTime).value(TimeUnit.NANOSECONDS.toMillis(snapshot.getMin())).build());
+                  this.openTsdbClient.offerMetricToOpenTsdb(Point.metric(metricName.getKey() + ".max").tag(this.globalTags).tag(metricName.getTags()).timestamp(endTime).value(TimeUnit.NANOSECONDS.toMillis(snapshot.getMax())).build());
+                  this.openTsdbClient.offerMetricToOpenTsdb(Point.metric(metricName.getKey() + ".avg").tag(this.globalTags).tag(metricName.getTags()).timestamp(endTime).value(TimeUnit.NANOSECONDS.toMillis((long) snapshot.getMean())).build());
+              }
+          }
+      }
   }
   ```
 
-## 防止Report被启动多次
+- 防止`Report`被启动多次
 
-```java
-public class ClientStatsManager {
-    private final static AtomicLong REFS = new AtomicLong(0);
-    private final static AtomicReference<SimpleScheduledReporter> METRIC_REPORT = new AtomicReference<>();
-
-    public static void refStats() {
-        final long oldCount = REFS.getAndIncrement();
-        if (oldCount == 0) {
-            final SimpleScheduledReporter metricReporter = new SimpleScheduledReporter(XXXRegister register, MetricFilter.ALL);
-            // 保证一分钟内至少被检查两次
-            // 确保前一分钟的统计数据在当前分钟内一定内被处理
-            metricReporter.start(29, TimeUnit.SECONDS);
-            METRIC_REPORT.set(metricReporter);
+    ```java
+    public class ReportManager {
+        private final static AtomicLong REFS = new AtomicLong(0);
+        private final static AtomicReference<OpenTsdbReporter> METRIC_REPORT = new AtomicReference<>();
+    
+        public static void refStats() {
+            final long oldCount = REFS.getAndIncrement();
+            if (oldCount == 0) {
+                final OpenTsdbReporter metricReporter = new OpenTsdbReporter(MetricManager.getIMetricManager(), this.openTsdbClient, new HashMap(), Clock.defaultClock());
+                // 保证一分钟内至少被检查两次
+                // 确保前一分钟的统计数据在当前分钟内一定内被处理
+                metricReporter.start(29, TimeUnit.SECONDS);
+                METRIC_REPORT.set(metricReporter);
+            }
+        }
+    
+        public static void unrefStats() {
+            final OpenTsdbReporter reporter = METRIC_REPORT.get();
+            final long oldCount = REFS.decrementAndGet();
+            if (oldCount == 0) {
+                reporter.stop();
+                METRIC_REPORT.compareAndSet(reporter, null);
+            }
         }
     }
-
-    public static void unrefStats() {
-        final MetricReporter reporter = METRIC_REPORT.get();
-        final long oldCount = REFS.decrementAndGet();
-        if (oldCount == 0) {
-            reporter.stop();
-            METRIC_REPORT.compareAndSet(reporter, null);
-        }
-    }
-}
-```
+    ```
 
 ## 整合OpenTSDB
 
 将指标值转成`Point`对象【指标名、`tag`、`当前时间戳`、`指标对应的值`】 - > 存入`OpenTSDB` -> 界面展示
+
+### 将指标数据写入OpenTsdb
+
+
+
+### 通过OpenTsdb查询指标数据并展示
+
+
 
 - `OpenTsdb`查询模块相关代码
 
