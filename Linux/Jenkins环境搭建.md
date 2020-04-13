@@ -423,82 +423,194 @@
 
 参考链接:[https://www.chenchen.org/2018/01/16/Jenkins_NodeJs_Vue_CI.html](https://www.chenchen.org/2018/01/16/Jenkins_NodeJs_Vue_CI.html)
 
-## SpringBoot项目部署脚本(deploy.sh)
+## Jenkins Pipeline使用详解
 
-```shell
-#!/bin/bash
-# loading profile and env
-if [ -f "/etc/profile" ]; then
-	source /etc/profile
-fi
-if [ -f "~/.bashrc" ]; then
-	source ~/.bashrc
-fi
-if [ -f "~/.profile" ]; then
-	source ~/.profile
-fi
-if [ -f "~/.bash_profile" ]; then
-	source ~/.bash_profile
-fi
+需要先安装两个插件:`Blue Ocean`和`Blue Ocean Pipeline Editor`
 
-SERVICE_HOME=/usr/local
-SERVICE_NAME="live-training"
+### SpringBoot项目
 
-FILENEW=$SERVICE_HOME/$SERVICE_NAME/filenew
-FILEBAK=$SERVICE_HOME/$SERVICE_NAME/filebak
+- `Jenkins Pipeline`配置
 
-echo "**********   DEPLOY START   **********"
-# 如果文件夹不存在则创建
-if [ ! -d $FILENEW  ];then
-	mkdir -p $FILENEW
-fi
-# 如果文件夹不存在则创建
-if [ ! -d $FILEBAK  ];then
-	mkdir -p $FILEBAK
-fi
+    ```
+    pipeline {
+        agent any;
+        
+        tools {
+            jdk 'JDK1.8'
+            maven 'Maven'
+        }
+        
+        options {
+            timestamps();
+        }
+        
+        parameters {
+            // https://plugins.jenkins.io/git-parameter/
+            gitParameter name: 'BRANCH', type: 'PT_BRANCH_TAG', defaultValue: 'master', description: '构建的分支'
+        }
+      
+        stages {
+            stage ("环境配置信息") {
+                steps {
+                    sh '''
+                        echo "PATH = ${PATH}"
+                        echo "M2_HOME = ${M2_HOME}"
+                    ''' 
+                }
+            }
+            
+            stage("检出代码"){
+                steps {
+                    checkout([$class: 'GitSCM', branches: [[name: '$BRANCH']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '29db3a41-8aa3-40dc-ae3d-a26644433c5b', url: 'http://118.24.206.22:6677/backend/live-training.git']]])
+                }
+            }
+            
+            stage("构建源代码") {
+                steps {
+                    sh '''
+                        mvn clean install -DskipTests=true -P test
+                    '''
+                }
+            }
+            
+            stage("发布安装包到远程服务器") {
+                // https://jenkins.io/doc/pipeline/steps/publish-over-ssh/
+                steps ([$class: 'BapSshPromotionPublisherPlugin']) {
+                    sshPublisher(
+                        continueOnError: false, 
+                        failOnError: true,
+                        publishers: [
+                            sshPublisherDesc(
+                                // 这里的configName是系统配置里头SSH服务器的Name
+                                configName: "测试服务器",
+                                verbose: true,
+                                transfers: [
+                                    sshTransfer(
+                                        sourceFiles: "target/live-training-1.0.0-SNAPSHOT.jar",
+                                        removePrefix: "target/",
+                                        remoteDirectory: "live-training",
+                                        execCommand: "cd /usr/local/live-training \r\n ./deploy.sh",
+                                    ),
+                                ]
+                            )
+                        ]
+                    )
+                }
+            }
+        }
+    
+        post {
+            success {
+                // https://jenkins.io/doc/pipeline/steps/email-ext/
+                script{
+                    emailext (
+                        mimeType: "text/html",
+                        from: "robertohuang@foxmail.com",
+                        subject: '$DEFAULT_SUBJECT',
+                        body: '$DEFAULT_CONTENT',
+                        to: "robertohuang@foxmail.com,982629079@qq.com",
+                        replyTo: '$DEFAULT_REPLYTO', 
+                        presendScript: '$DEFAULT_PRESEND_SCRIPT',
+                        postsendScript: '$DEFAULT_POSTSEND_SCRIPT'
+                    )
+                }
+            }
+            failure {
+                // https://jenkins.io/doc/pipeline/steps/email-ext/
+                script{
+                    emailext (
+                        mimeType: "text/html",
+                        from: "robertohuang@foxmail.com",
+                        subject: '$DEFAULT_SUBJECT',
+                        body: '$DEFAULT_CONTENT',
+                        to: "robertohuang@foxmail.com,982629079@qq.com",
+                        replyTo: '$DEFAULT_REPLYTO', 
+                        presendScript: '$DEFAULT_PRESEND_SCRIPT',
+                        postsendScript: '$DEFAULT_POSTSEND_SCRIPT'
+                    )
+                }
+            }
+        }
+    }
+    ```
 
-# 获取服务器端项目的进程
-echo "NOW start closing the old process..."
-tpid=`ps -ef | grep "$SERVICE_NAME" | grep -v "grep" | awk '{print $2}'`
-# 如果存在已有的进程则进行关闭
-for id in $tpid
-do
-	echo "founding running instance of " $SERVICE_NAME $id ", stoping..."
-	kill -15 $id
-done
-echo "Closing the old process finished..."
+- `deploy.sh`脚本
 
-# 备份当前版本数据
-echo "NOW backup and remove the current version..."
-TIMESTAMP=`date +%Y%m%d%H%M%S`
-cd $FILENEW
+    ```shell
+    #!/bin/bash
+    # loading profile and env
+    if [ -f "/etc/profile" ]; then
+    	source /etc/profile
+    fi
+    if [ -f "~/.bashrc" ]; then
+    	source ~/.bashrc
+    fi
+    if [ -f "~/.profile" ]; then
+    	source ~/.profile
+    fi
+    if [ -f "~/.bash_profile" ]; then
+    	source ~/.bash_profile
+    fi
+    
+    SERVICE_HOME=/usr/local
+    SERVICE_NAME="live-training"
+    
+    FILENEW=$SERVICE_HOME/$SERVICE_NAME/filenew
+    FILEBAK=$SERVICE_HOME/$SERVICE_NAME/filebak
+    
+    echo "**********   DEPLOY START   **********"
+    # 如果文件夹不存在则创建
+    if [ ! -d $FILENEW  ];then
+    	mkdir -p $FILENEW
+    fi
+    # 如果文件夹不存在则创建
+    if [ ! -d $FILEBAK  ];then
+    	mkdir -p $FILEBAK
+    fi
+    
+    # 获取服务器端项目的进程
+    echo "NOW start closing the old process..."
+    tpid=`ps -ef | grep "$SERVICE_NAME" | grep -v "grep" | awk '{print $2}'`
+    # 如果存在已有的进程则进行关闭
+    for id in $tpid
+    do
+    	echo "founding running instance of " $SERVICE_NAME $id ", stoping..."
+    	kill -15 $id
+    done
+    echo "Closing the old process finished..."
+    
+    # 备份当前版本数据
+    echo "NOW backup and remove the current version..."
+    TIMESTAMP=`date +%Y%m%d%H%M%S`
+    cd $FILENEW
+    
+    # 备份日志文件
+    if [ -d logs  ];then
+    	echo "backup log..."
+    	tar cf $FILEBAK/$SERVICE_NAME.logs.$TIMESTAMP.tar.gz logs/
+    fi
+    
+    # 备份安装包文件
+    if [ -f $SERVICE_NAME-*.jar ];then
+    	echo "backup install package..."
+    	tar cf $FILEBAK/$SERVICE_NAME.$TIMESTAMP.tar.gz $SERVICE_NAME-*.jar
+    fi
+    echo "backup and remove the current version finished..."
+    
+    # 删除旧版安装包
+    echo "Start deleting old installation packages..."
+    rm -rf $FILENEW/*
+    echo "deleting old installation packages finished..."
+    
+    # 将最新上传的war包从上传目录移动到项目启动目录
+    mv $SERVICE_HOME/$SERVICE_NAME/$SERVICE_NAME-*.jar $FILENEW
+    
+    # 启动项目
+    cd $FILENEW
+    echo "Start preparing to deploy a new version..."
+    nohup java -Dspring.profiles.active=test -jar $SERVICE_NAME-*.jar >/dev/null 2>&1 &
+    echo "Deployment of new version is finished..."
+    echo "**********   DEPLOY SUCCESS   **********
+    ```
 
-# 备份日志文件
-if [ -d logs  ];then
-	echo "backup log..."
-	tar cf $FILEBAK/$SERVICE_NAME.logs.$TIMESTAMP.tar.gz logs/
-fi
-
-# 备份安装包文件
-if [ -f $SERVICE_NAME-*.jar ];then
-	echo "backup install package..."
-	tar cf $FILEBAK/$SERVICE_NAME.$TIMESTAMP.tar.gz $SERVICE_NAME-*.jar
-fi
-echo "backup and remove the current version finished..."
-
-# 删除旧版安装包
-echo "Start deleting old installation packages..."
-rm -rf $FILENEW/*
-echo "deleting old installation packages finished..."
-
-# 将最新上传的war包从上传目录移动到项目启动目录
-mv $SERVICE_HOME/$SERVICE_NAME/$SERVICE_NAME-*.jar $FILENEW
-
-# 启动项目
-cd $FILENEW
-echo "Start preparing to deploy a new version..."
-nohup java -Dspring.profiles.active=test -jar $SERVICE_NAME-*.jar >/dev/null 2>&1 &
-echo "Deployment of new version is finished..."
-echo "**********   DEPLOY SUCCESS   **********
-```
-
+    
