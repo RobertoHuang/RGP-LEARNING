@@ -12,8 +12,8 @@
 
   ```reStructuredText
   git最小配置:
-  git config --global user.name 'taihong.huang'
-  git config --global user.email 'robertohuang@foxmail.com'
+  git config [--local | --global | --system] user.name 'taihong.huang'
+  git config [--local | --global | --system] user.email 'robertohuang@foxmail.com'
   ```
 
 - 删除配置
@@ -48,6 +48,23 @@ git pull 拉取远程分支修改应用到本地
 git push 将本地分支修改推送到远程分支
 ```
 
+## 修改Commit信息
+
+- 修改最后一次的提交信息
+
+    ```shell
+    # 修改提交信息
+    git commit --amend -m "new message"
+    
+    # 添加文件到最近的一次Commit 
+    # 先git add提交的时候使用如下命令
+    git commit --amend --no-edit
+    ```
+
+
+
+
+
 ## 忽略某些文件
 
 - `.gitignore`文件
@@ -67,6 +84,8 @@ git push 将本地分支修改推送到远程分支
   ```
 
   适用于你想某个规则对所有仓库都生效并且不需要共享给其他用户，则可以配置变量`core.excludesFile`
+  
+- 如果不知道自己所用的工具或语言通常会忽略哪些文件可参考[GitHub整理的.gitignore文件](https://github.com/github/gitignore)
 
 忽略配置只针对未被追踪文件生效，如果文件已被追踪需先使用命令`git rm --cache <file>`取消追踪才可生效
 

@@ -38,15 +38,9 @@
     /usr/local/sdkman/candidates/java/current/bin/java
     ```
   
-- `Jenkins`系统配置文件路径为`/etc/sysconfig/jenkins`
+- `Jenkins`系统配置文件路径为`/etc/sysconfig/jenkins`，默认工作目录为`/var/lib/jenkins`
 
-- `Jenkin`默认工作目录为`/var/lib/jenkins`
-
-- `Jenkins`的`JOB`配置转为`XML`的地址为
-
-  ```
-  {JenkinsURL}/job/{jobName}/config.xml
-  ```
+- `Jenkins`的`JOB`配置转为`XML`的地址为`{JenkinsURL}/job/{jobName}/config.xml`
 
 ## 插件安装
 
@@ -425,7 +419,7 @@
 
 ## Jenkins Pipeline使用详解
 
-需要先安装两个插件:`Blue Ocean`和`Blue Ocean Pipeline Editor`
+建议安装两个插件:`Blue Ocean`和`Blue Ocean Pipeline Editor`
 
 ### SpringBoot项目
 
