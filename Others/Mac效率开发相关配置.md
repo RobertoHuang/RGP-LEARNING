@@ -19,9 +19,7 @@
 
 - 配置`iterm2`字体:`Preferences > Profiles > Default > Text`
 
-  <div align="center">    
-      <img src="images/item2字体配置.png" align=center />
-  </div>
+  ![item2字体配置](images/Mac效率开发相关配置/item2字体配置.png)
 
 ## 配色方案
 
@@ -153,3 +151,8 @@ command + 数字：切换标签页
 
 command + 方向键：按方向切换标签页
 ```
+
+## Alfred相关WorkFlow配置
+
+- 谷歌翻译，[官方地址](https://github.com/xfslove/alfred-google-translate)
+
