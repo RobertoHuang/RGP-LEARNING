@@ -35,7 +35,7 @@
 
 ## Mac Beyond Compare破解
 
-- 首先下载`Beyond Compare`最新版本，链接如下[下载地址。](https://www.scootersoftware.com/download.php)下载完成后，直接安装
+- 首先下载`Beyond Compare`最新版本，链接如下[下载地址](https://www.scootersoftware.com/download.php)下载完成后，直接安装
 
 - 进入`Mac`应用程序目录下，找到刚刚安装好的`Beyond Compare`，路径如下`/Applications/Beyond Compare.app/Contents/MacOS`，修改启动程序文件`BCompare`为`BCompare.real`
 
@@ -56,3 +56,4 @@
   ```
 
 - 以上步骤完成后再次打开`Beyond Compare`就可以正常使用了
+

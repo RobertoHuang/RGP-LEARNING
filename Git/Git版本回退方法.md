@@ -38,7 +38,7 @@
 一个显而易见的问题：如果你回退公共远程分支，把别人的提交给丢掉了怎么办？
 ```
 
-假如你的远程`master`分支情况是这样的:`A1–A2–B1`，其中`A`、`B`分别代表两个人，`A1`、`A2`、`B1`代表各自的提交。并且所有人的本地分支都已经更新到最新版本，和远程分支一致。这个时候你发现`A2`这次提交有错误，你用`reset`回滚远程分支`master`到`A1`，那么理想状态是你的队友一拉代码`git pull`，他们的`master`分支也回滚了，然而现实却是，你的队友会看到下面的提示：
+假如你的远程`master`分支情况是这样的:`A1–A2–B1`，其中`A`、`B`分别代表两个人，`A1`、`A2`、`B1`代表各自的提交。并且所有人的本地分支都已经更新到最新版本，和远程分支一致。这个时候你发现`A2`这次提交有错误，你用`reset`回滚远程分支`master`到`A1`，那么理想状态是你的队友一拉代码`git pull`，他们的`master`分支也回滚了，然而现实却是，你的队友会看到下面的提示:
 
 ```
 $ git status
@@ -116,14 +116,16 @@ git revert <commit id>              // 撤销指定commit id这次提交
 
 ### Git Reset
 
+> `git reset`常见使用场景【取消暂存、版本回退、合并多个提交】
+>
 > 为了理解好`Git Reset`需要先对`Git`三棵树的概念有所了解，关于三棵树的概念可执行百度查阅
 
-- `git reset [ –soft | –mixed | –hard] [commit id] [--] [file]`版本回退
+- `git reset [ –soft | –mixed | –hard] [commit id] [--] [file]`
 
   ```
-  soft:将仓库的修改丢弃
-  mixed:将仓库和暂存区的修改丢弃
-  hard:将仓库、暂存区和工作区的修改都丢弃
+  soft:将仓库的修改重置到
+  mixed:将仓库和暂存区的修改重置到
+  hard:将仓库、暂存区和工作区的修改都重置到
   
   如果<commit id>未指定默认为Head
   如果[ –soft | –mixed | –hard]未指定默认为–mixed
@@ -141,4 +143,3 @@ git revert <commit id>              // 撤销指定commit id这次提交
 
     ![git reset --hard](https://raw.githubusercontent.com/RobertoHuang/RGP-LEARNING/master/Git/images/git%20reset%20--hard.png)
 
-- `git reset`常见使用场景【取消暂存、版本回退、合并多个提交】
