@@ -9,7 +9,7 @@
   ```reStructuredText
   1.从官网下载ElasticSearch并解压
   
-  2.进入bin目录执行./elasticsearch脚本运行ElasticSearch
+  2.进入bin目录执行./elasticsearch -d -p pid 脚本运行ElasticSearch【其中-d为后台运行 -p为进程ID】
   
   3.访问http://192.168.56.128:9200/查看当前ElasticSearch服务状态
   ```
@@ -125,6 +125,10 @@
   
   3.给新建的xxx用户赋权限，切换到root用户执行chown -R xxx /你的elasticsearch安装目录
   ```
+
+## ElasticSearch配置
+
+
 
 ## ElasticSearch简单使用
 
