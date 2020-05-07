@@ -128,7 +128,8 @@
 
 ## ElasticSearch配置
 
-
+- `JVM`配置
+    - `Xms`和`Xmx`建议设置成一样，`Xmx`不要超过机器总内存的一半且不要超过30G
 
 ## ElasticSearch简单使用
 
