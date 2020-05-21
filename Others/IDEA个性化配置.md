@@ -4,6 +4,8 @@
 
 ## 插件篇
 
+- 字节码查看插件`jclasslib bytecode viewer`
+
 - 代码格式化插件`Safe Action`，[插件地址](https://github.com/dubreuia/intellij-plugin-save-actions)。推荐配置如下图
 
     ![image-20200312135908596](images/IDEA个性化配置/image-20200312135908596.png)
@@ -19,3 +21,4 @@
     当代码修改后使用`Ctrl + F9`进行手动编译，项目就会热加载
 
     
+
