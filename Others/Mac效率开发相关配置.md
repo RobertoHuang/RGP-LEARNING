@@ -152,6 +152,20 @@ command + 数字：切换标签页
 command + 方向键：按方向切换标签页
 ```
 
+## Item2使用代理加速
+
+直接在`.bashrc`或者`.zshrc`添加下面内容
+通过设置`alias`简写来简化操作，每次要用的时候输入`proxy`，不用了就`unproxy`
+
+```
+alias unsetproxy="unset ALL_PROXY"
+alias setproxy="export ALL_PROXY=socks5://127.0.0.1:1086"
+```
+
+设置完毕后使用直接`curl https://twitter.com`有返回内容就可以了
+
+但是需要注意这种方法只局限与当前`tab`或`window`，比如你有一个`tab`开了`proxy`你新开一个`tab`是没有经过`proxy`的，关闭`tab`再开启也是需要开启`proxy`的。这种方法虽然麻烦但我感觉这是比较安全的
+
 ## Alfred相关WorkFlow配置
 
 - 谷歌翻译，[官方地址](https://github.com/xfslove/alfred-google-translate)
