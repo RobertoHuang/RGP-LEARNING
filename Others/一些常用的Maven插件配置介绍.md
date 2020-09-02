@@ -400,8 +400,8 @@
         <server> 
           <!-- 对应下面的Repository的ID/Mirror的ID -->  
           <id>company-nexus</id>  
-          <username>admin</username>  
-          <password>zcjy996</password> 
+          <username>账号</username>  
+          <password>密码</password> 
         </server> 
       </servers>  
       <mirrors> 
@@ -410,7 +410,7 @@
           <!-- 对应下面的Repository的ID -->  
           <mirrorOf>central</mirrorOf>  
           <name>company-nexus</name>  
-          <url>http://118.24.206.22:8081/repository/maven-public/</url> 
+          <url>私服地址</url> 
         </mirror>  
         <mirror> 
           <id>aliyun-nexus</id>  
