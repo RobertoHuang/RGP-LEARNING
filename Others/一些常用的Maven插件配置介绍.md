@@ -328,4 +328,175 @@
     </plugin>
     ```
 
+
+## versions-maven-plugin聚合工程版本控制
+
+`versions-maven-plugin`插件可以管理项目版本，特别是当`Maven`工程项目中有大量子模块时可以批量修改`pom`版本号，插件会把父模块更新到指定版本号然后更新子模块版本号与父模块相同，可以避免手工大量修改和遗漏的问题
+
+```xml
+<plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>versions-maven-plugin</artifactId>
+    <version>${versions-maven-plugin.version}</version>
+    <executions>
+        <execution>
+            <id>update-mc-version</id>
+            <phase>install</phase>
+            <inherited>false</inherited>
+            <goals>
+                <goal>set</goal>
+            </goals>
+        </execution>
+    </executions>
+    <configuration>
+        <newVersion>${mc.version}</newVersion>
+        <generateBackupPoms>false</generateBackupPoms>
+        <processAllModules>true</processAllModules>
+    </configuration>
+</plugin>
+```
+
+## 附录
+
+- `Maven`的`setting.xml`中的`MirrorOf`配置
+
+    > 当`maven`需要到的依赖jar包不在本地仓库时, 就需要到远程仓库下载
+    >
+    > 这个时候如果`maven setting.xml`中配置了镜像 , 而且镜像配置的规则中匹配到目标仓库时，`maven`认为目标仓库被镜像了, 不会再去被镜像仓库下载依赖`jar`包，而是直接去镜像仓库下载。简单而言`mirror`可以拦截对远程仓库的请求，改变对目标仓库的下载地址。以下是一些配置示例
+
+    ```xml
+    <mirrorOf>central</mirrorOf> 表示该配置为中央仓库的镜像
+    <mirrorOf>*</mirrorOf> 匹配所有远程仓库
+    <mirrorOf>external:*</mirrorOf> 匹配所有远程仓库，使用localhost的除外，使用file://协议的除外。也就是说匹配所有不在本机上的远程仓库
+    <mirrorOf>*,!repo1</miiroOf> 匹配所有远程仓库，repo1除外，使用感叹号将仓库从匹配中排除
+    <mirrorOf>repo1,repo2</mirrorOf> 匹配仓库repo1和repo2，使用逗号分隔多个远程仓库。这个的repo1和repo2对应的是repository的id标签的值
+    ```
+
+    附上一个常用的`Maven setting`文件配置
+
+    ```xml
+    <?xml version="1.0" encoding="utf-8"?>
+    
+    <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">  
+      <!-- 本地仓库地址 -->  
+      <localRepository>/Users/roberto/Repository</localRepository>  
+      
+      <proxies> 
+        <!-- 
+          <proxy>
+            <id>optional</id>
+            <active>true</active>
+            <protocol>http</protocol>
+            <username>proxyuser</username>
+            <password>proxypass</password>
+            <host>proxy.host.net</host>
+            <port>80</port>
+            <nonProxyHosts>local.net|some.host.com</nonProxyHosts>
+          </proxy>
+        --> 
+      </proxies>  
+      <servers> 
+        <!-- 配置仓库的认证信息 -->  
+        <server> 
+          <!-- 对应下面的Repository的ID/Mirror的ID -->  
+          <id>company-nexus</id>  
+          <username>admin</username>  
+          <password>zcjy996</password> 
+        </server> 
+      </servers>  
+      <mirrors> 
+        <mirror> 
+          <id>company-nexus</id>  
+          <!-- 对应下面的Repository的ID -->  
+          <mirrorOf>central</mirrorOf>  
+          <name>company-nexus</name>  
+          <url>http://118.24.206.22:8081/repository/maven-public/</url> 
+        </mirror>  
+        <mirror> 
+          <id>aliyun-nexus</id>  
+          <!-- 对应下面的Repository的ID -->  
+          <mirrorOf>home</mirrorOf>  
+          <name>aliyun maven</name>  
+          <url>http://maven.aliyun.com/nexus/content/repositories/central/</url> 
+        </mirror> 
+      </mirrors>  
+     
+      <profiles> 
+        <profile> 
+          <id>nexus-home</id>  
+          <!-- 用来下载[非插件]的依赖 -->  
+          <repositories> 
+            <repository> 
+              <id>home</id>  
+              <url>http://central</url>  
+              <releases> 
+                <enabled>true</enabled> 
+              </releases>  
+              <snapshots> 
+                <enabled>true</enabled>  
+                <updatePolicy>always</updatePolicy> 
+              </snapshots> 
+            </repository> 
+          </repositories>  
+          <!-- 用来下载[插件]的依赖 -->  
+          <pluginRepositories> 
+            <pluginRepository> 
+              <id>home</id>  
+              <url>http://central</url>  
+              <releases> 
+                <enabled>true</enabled> 
+              </releases>  
+              <snapshots> 
+                <enabled>true</enabled>  
+                <updatePolicy>always</updatePolicy> 
+              </snapshots> 
+            </pluginRepository> 
+          </pluginRepositories> 
+        </profile> 
+    
+        <profile> 
+          <id>nexus-company</id>  
+          <!-- 用来下载[非插件]的依赖 -->  
+          <repositories> 
+            <repository> 
+              <id>central</id>  
+              <url>http://central</url>  
+              <releases> 
+                <enabled>true</enabled> 
+              </releases>  
+              <snapshots> 
+                <!-- 是否允许该仓库为artifact提供发布版/快照版下载功能 -->  
+                <enabled>true</enabled>  
+                <!-- 
+                  每次执行构建命令时Maven会比较本地POM和远程POM的时间戳, 该元素指定比较的频率
+                  always每次构建都检查, daily默认距上次构建检查时间超过一天, interval:x 距上次构建检查超过x分钟、 never从不
+                 -->  
+                <updatePolicy>always</updatePolicy> 
+              </snapshots> 
+            </repository> 
+          </repositories>  
+          <!-- 用来下载[插件]的依赖 -->  
+          <pluginRepositories> 
+            <pluginRepository> 
+              <id>central</id>  
+              <url>http://central</url>  
+              <releases> 
+                <enabled>true</enabled> 
+              </releases>  
+              <snapshots> 
+                <enabled>true</enabled>  
+                <updatePolicy>always</updatePolicy> 
+              </snapshots> 
+            </pluginRepository> 
+          </pluginRepositories> 
+        </profile> 
+      </profiles>  
+    
+      <activeProfiles> 
+        <!-- 默认需要激活的Profile -->  
+        <activeProfile>nexus-home</activeProfile> 
+      </activeProfiles> 
+    </settings>
+    ```
+
     
