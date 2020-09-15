@@ -19,6 +19,7 @@ data:
   mysqld.cnf: |
         [mysqld]
         bind-address                   = 0.0.0.0
+        default-time_zone              = '+8:00'
         init_connect                   = 'SET NAMES utf8'
         character-set-server           = utf8mb4
         pid-file                       = /var/run/mysqld/mysqld.pid
