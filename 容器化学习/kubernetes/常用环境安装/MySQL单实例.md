@@ -122,6 +122,7 @@ spec:
       - name: mysql-data
         persistentVolumeClaim:
           claimName: mysql-data
+          
 ---
 apiVersion: v1
 kind: Service
