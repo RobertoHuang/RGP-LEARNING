@@ -215,11 +215,11 @@
 
     我们这里需要在下面挂载两个主机目录
 
-    `/var/run/docker.sock`，该文件是用于`Pod`中的容器能够共享宿主机的`Docker`，这就是大家说的`Docker in Docker`的方式
+    `/var/run/docker.sock`该文件是用于`Pod`中的容器能够共享宿主机的`Docker`，这就是大家说的`Docker in Docker`的方式
 
-    `/root/.kube`我们将这个目录挂载到容器的`/root/.kube`目录下面这是为了让我们能够在`Pod`的容器中能够使用`kubectl`工具来访问我们的`Kubernetes`集群
+    `/root/.kube`为了让我们能够在`Pod`的容器中能够使用`kubectl`工具来访问我们的`Kubernetes`集群
 
-    一些同学在配置了后运行`Slave Pod`的时候出现了权限问题，因为`Jenkins Slave Pod`中没有配置权限，所以需要配置上`ServiceAccount`
+    可能配置后运行`Slave Pod`的时候出现了权限问题因为`Jenkins Slave Pod`中没有配置权限，所以需要配置上`ServiceAccount`
 
     ![image-20200927164558067](images/Jenkins安装与环境初始化/image-20200927164558067.png)
 
@@ -236,5 +236,5 @@
     jenkins-slave-rxnvh        1/1     Terminating   0          6s
     ```
 
-    当构建的时候会自动创建`jenkins-slave-xxx`的`pod`，当构建成功后该`pod`会被自动删除。到此我们完成了`Jenkins`动态`Slave`的配置
+    当构建的时候会自动创建`jenkins-slave-xxx`的`pod`，当构建成功后该`pod`会被自动删除。到此我们完成`Jenkins`动态`Slave`的配置
 
