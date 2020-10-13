@@ -30,7 +30,7 @@
 
     - 编辑`zoo.cfg`将`zookeeper`的`dataDir`和`dataLogDir`指向之前创建好的文件及日志目录
 
-      ```shell
+      ```properties
       # The number of milliseconds of each tick
       tickTime=2000
       # The number of ticks that the initial
@@ -60,11 +60,11 @@
       # Set to "0" to disable auto purge feature
       # autopurge.purgeInterval=1
       
-      ## Metrics Providers
+      # Metrics Providers
       # https://prometheus.io Metrics Exporter
-      #metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider
-      #metricsProvider.httpPort=7000
-      #metricsProvider.exportJvmInfo=true
+      # metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider
+      # metricsProvider.httpPort=7000
+      # metricsProvider.exportJvmInfo=true
       ```
     
     - 在`dataDir`下创建`myid`文件(编辑`myid`文件并在对应的`IP`的机器上输入对应的编号)
