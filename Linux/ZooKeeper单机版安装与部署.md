@@ -98,7 +98,7 @@
     chkconfig zookeeper on
     chkconfig --add zookeeper
     
-  # 添加完成之后接这个使用chkconfig --list来看看我们添加的zookeeper是否在里面
+  # 添加完成之后使用下面的命令来看看我们添加的zookeeper是否在里面
     chkconfig --list
     ```
   
