@@ -202,7 +202,7 @@ spec:
               targetPort: 9376
         ```
 
-        创建该服务后如果通过`kubectl describe svc`查看该服务会发现没有`Cluster IP`，并且通过以下命令可以查找对该无头服务匹配的``Pod`对应的`IP`
+        创建该服务后如果通过`kubectl describe svc`查看该服务会发现没有`Cluster IP`，并且通过以下命令可以查找对该无头服务匹配的`Pod`对应的`IP`
 
         ```shell
         kubectl run -it --rm --image=busybox:1.28 --restart=Never busybox -- nslookup zookeeper-hs[无头服务名称]
