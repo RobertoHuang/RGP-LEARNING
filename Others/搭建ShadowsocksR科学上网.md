@@ -18,20 +18,45 @@
 
     <img src="images/搭建ShadowsocksR科学上网/image-20201116101556951.png"/>
 
-- 安装`Docker`
 
-    ```
-    sudo yum install -y yum-utils
-    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum install docker-ce docker-ce-cli containerd.io
-    sudo service docker restart
-    ```
+## 脚本方式部署
 
-- 启动容器
+```shell
+yum -y install git
+git clone -b master https://github.com/flyzy2005/ss-fly
+ss-fly/ss-fly.sh -ssr 
 
-    ```
-    docker run --privileged -d -p 8008:8008/tcp -p 8008:8008/udp --name ssr-bbr-docker letssudormrf/ssr-bbr-docker -p 8008 -k password -m rc4-md5 -O auth_aes128_md5 -o plain
-    ```
+# 设置好相关参数后进行安装
+# 全部选择结束后，会看到如下界面，就说明搭建ssr成功了
+Congratulations, ShadowsocksR server install completed!
+Your Server IP        :  
+Your Server Port      :  
+Your Password         :  
+Your Protocol         :  
+Your obfs             :  
+Your Encryption Method:  
 
-    更多关于`SSR-BBR`可参考:https://github.com/letssudormrf/ssr-bbr-docker。启动后使用客户端配置后即可科学上网了
+Welcome to visit:https://shadowsocks.be/9.html
+Enjoy it!
 
+# 相关操作ssr命令
+启动：/etc/init.d/shadowsocks start
+停止：/etc/init.d/shadowsocks stop
+重启：/etc/init.d/shadowsocks restart
+状态：/etc/init.d/shadowsocks status
+ 
+配置文件路径：/etc/shadowsocks.json
+日志文件路径：/var/log/shadowsocks.log
+代码安装目录：/usr/local/shadowsocks
+
+# 卸载ssr服务
+./shadowsocksR.sh uninstall
+
+# 一键开启BBR加速，装完后需要重启系统，输入y即可立即重启，或者之后输入reboot命令重启
+ss-fly/ss-fly.sh -bbr
+# 判断BBR加速有没有开启成功。输入以下命令
+sysctl net.ipv4.tcp_available_congestion_control
+# 如果返回值为net.ipv4.tcp_available_congestion_control = bbr cubic reno后面有bbr，则说明已经开启成功了
+```
+
+更多关于SSR部署可以参考:https://github.com/flyzy2005/ss-fly。启动后使用客户端配置后即可科学上网了
