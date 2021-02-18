@@ -37,14 +37,21 @@ spec:
       spec:
         accessModes:
         - ReadWriteMany
-        storageClassName: roberto-cfs-retain
+        storageClassName: roberto-cbs-retain
         resources:
           requests:
-            storage: 10Gi
+            storage: 100Gi
     config:
       node.store.allow_mmap: false
     podTemplate:
       spec:
+        initContainers:
+        - name: install-plugins
+          command:
+            - sh
+            - -c
+            - |
+              bin/elasticsearch-plugin install --batch https://live-training-prod-1256988462.cos.ap-chengdu.myqcloud.com/roberto/elasticsearch-analysis-ik-7.5.1.zip
         containers:
           - name: elasticsearch
             env:
@@ -157,3 +164,9 @@ spec:
     # 访问Kibana集群
     curl "http://localhost:5601"
     ```
+
+## 附录
+
+- IK分词器安装
+    - https://github.com/medcl/elasticsearch-analysis-ik
+    - https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-init-containers-plugin-downloads.html
