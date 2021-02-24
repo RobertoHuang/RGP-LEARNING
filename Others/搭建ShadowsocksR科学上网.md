@@ -60,3 +60,34 @@ sysctl net.ipv4.tcp_available_congestion_control
 ```
 
 更多关于SSR部署可以参考:https://github.com/flyzy2005/ss-fly。启动后使用客户端配置后即可科学上网了
+
+## 科学上网配置
+
+下文是介绍终端窗口如何进行科学上网(阅读以下内容建议建立在浏览器已经能科学上网的前提下)
+
+配置`socks5`和`http`以及`https`全都代理
+
+```
+alias setproxy='export socks5_proxy=socks5://127.0.0.1:1086;
+                export http_proxy=http://127.0.0.1:1087;
+                export https_proxy=http://127.0.0.1:1087;
+                git config --global http.proxy "socks5://127.0.0.1:1086"
+                git config --global https.proxy "socks5://127.0.0.1:1086"'
+                
+alias unsetproxy='unset socks5_proxy http_proxy https_proxy
+                  git config --global --unset http.proxy
+                  git config --global --unset https.proxy'
+```
+
+如果使用`Shadowsocks`的话，上诉配置的地址查看界面分别是
+
+![image-20210224111504485](images/搭建ShadowsocksR科学上网/image-20210224111504485.png)
+
+这里`Socks5`地址我修改成`0.0.0.0`的原因是因为我的虚拟机也想共享宿主机的`Shadowsocks`配置
+
+![image-20210224111527967](images/搭建ShadowsocksR科学上网/image-20210224111527967.png)
+
+这里的`HTTP`地址修改为`0.0.0.0`的原因同上。通过上诉配置后那么`wget` `curl git clone` 这类命令都会经过代理
+
+`Pac`规则配置默认地址为`https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt`
+
