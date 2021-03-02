@@ -9,7 +9,7 @@
 
 下图是`Generic Webhook Trigger`的一个执行流程示意图
 
-![img](images/Generic Webhook Trigger/jenkins-generic-webhook-trigger-7.png)
+![img](images/Generic_Webhook_Trigger/jenkins-generic-webhook-trigger-7.png)
 
 ## Jenkins File配置
 
@@ -56,7 +56,7 @@ properties([
 
 进入项目`Webhook`配置页面
 
-![img](images/Generic Webhook Trigger/webhook配置.png)
+![img](images/Generic_Webhook_Trigger/webhook配置.png)
 
 `URL`地址格式为`{jenkins 地址}/generic-webhook-trigger/invoke?token={token}`
 
