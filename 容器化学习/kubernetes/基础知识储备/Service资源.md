@@ -1,32 +1,39 @@
 # Service资源
 
-> `kubernetes`集群中的`Pod`通常需要应对来自集群内部的`Pod`以及集群外部的客户端请求作出响应。考虑到如下因素
+> `kubernetes`集群中的`Pod`通常需要应对来自集群内部的`Pod`以及集群外部的客户端请求作出响应，考虑到如下因素
 >
-> - `Pod`是短暂的，它们可能会随时启动或者关闭(弹性扩缩容、节点故障等因素)
-> - `Pod IP`是不固定的，`Kubernetes`在`Pod`启动前会给已经调度到节点上的`Pod`分配`IP`地址
-> - 多个`Pod`可能提供相同服务，客户端无须关心提供服务`Pod`的数量以及各自对应的`IP`
+> - `Pod`数量不固定
+> - `Pod`的`IP`地址不固定
 >
-> 为了解决上诉问题`Kubernetes`提供了一种资源类型`Service`。开源版本中主要有`ClusterIP`、`NodePort`、`LoadBalance`三种类型
+> 为了解决上诉问题`Kubernetes`提供了一种资源类型`Service`
+>
+> `Kubernetes`服务是一种为一组功能相同的`Pod`提供单一不变的接入点资源，当服务存在时它的`IP`地址和端口不会改变
+>
+> 客户端通过`IP`地址和端口号建立连接，这些连接会被路由到提供该服务的任意 一个`pod`上。通过这种方式客户端不需要知道每个单独的提供服务的`pod`的地址，这样这些`pod`就可以在集群中随时被创建或移除
+>
+> 目前开源版本的`Kubernetes`中主要有`ClusterIP`、`NodePort`、`LoadBalance`三种服务类型
 
 ## 定义Service
 
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: my-service
-spec:
-  selector:
-    # 标签选择器
-    # 具有app=MyApp的Pod都属于该服务
-    app: MyApp
-  ports:
-    - protocol: TCP
-      # 该服务的端口
-      port: 80
-      # 服务将连接转发到的容器端口
-      targetPort: 9376
-```
+- 创建`ClusterIP`服务
+
+    ```yaml
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: my-service
+    spec:
+      selector:
+        # 标签选择器
+        # 具有app=MyApp的Pod都属于该服务
+        app: MyApp
+      ports:
+        - protocol: TCP
+          # 该服务的端口
+          port: 80
+          # 服务将连接转发到的容器端口
+          targetPort: 9376
+    ```
 
 - `Session`保持
 
@@ -35,13 +42,15 @@ spec:
     ```yaml
     sessionAffinity: ClientIP
     sessionAffinityConfig:
-        clientIP:
-          timeoutSeconds: 10800
+      clientIP:
+        timeoutSeconds: 10800
     ```
 
-    如果要确保每次都将来自特定客户端的连接传递到同一`Pod`， 则可以通过将`service.spec.sessionAffinity`设置为`ClientIP`(默认值是`None`)
+    如果要确保每次都将来自特定客户端的连接传递到同一`Pod`
 
-    还可以通过适当设置`service.spec.sessionAffinityConfig.clientIP.timeoutSeconds`来设置最大会话停留时间(默认值为10800秒，即3小时)
+    则可以通过将`service.spec.sessionAffinity`设置为`ClientIP`(默认值是`None`)
+
+    通过`service.spec.sessionAffinityConfig.clientIP.timeoutSeconds`来设置最大会话停留时间(默认值为10800秒，即3小时)
 
 - 使用命名的端口
 
@@ -68,6 +77,8 @@ spec:
     metadata:
       name: my-service
     spec:
+      selector:
+        app: MyApp
       ports:
         - protocol: TCP
           # 该服务的端口
@@ -90,15 +101,9 @@ spec:
 
     客户端在知道服务名称的前提下可以通过全限定域名`FQDN`来访问，`FQDN`的规则如下
 
-    `my-svc.my-namespace.svc.cluster.local`:`svc.cluster.local`是所有集群本地服务名称中可配置集群域后缀
+    `my-svc.my-namespace.svc.cluster.local`:`cluster.local`是集群域`cluster-domain`
 
     如果`Pod`和`Service`对应的`Pod`在同一名称空间下，甚至可以省略`.my-namespace.svc.cluster.local`，简单到不可思议
-
-- 资源对象`Endpoints`以及`ExternalName`介绍
-
-    前者是用来解耦`SVC`和`Pod`的绑定关系，后者是用来解耦内部`Pod`与外部系统`API`的绑定关系
-
-    这两种平时使用较少，可以参考书籍<<Kubernetes In Action>>的5.2小节进行学习
 
 - 将服务暴露给外部客户端
 
@@ -160,18 +165,16 @@ spec:
           - host: roberto.example.com
             http:
               paths:
-              - backend:
-                  将所有该域名的请求发送到my-service服务的80端口
+              - path: /
+                backend:
+                  # 将所有该域名的请求发送到my-service服务的80端口
                   serviceName: my-service
                   servicePort: 80
-                path: /
         ```
 
         通过一个`Ingress`访问服务的大致图解
 
         ![image-20201030144750173](images/Service资源/image-20201030144750173.png)
-
-        关于`Ingress`的`HTTPS`配置(略)
 
     - 关于存活探针和就绪探针的区别
 
@@ -213,3 +216,4 @@ spec:
         ```shell
         kubectl run -it --rm --image=busybox:1.28 --restart=Never busybox -- nslookup zookeeper-0.zookeeper-hs
         ```
+
