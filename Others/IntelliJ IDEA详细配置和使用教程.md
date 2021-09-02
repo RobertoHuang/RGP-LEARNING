@@ -1,4 +1,4 @@
-# IntelliJ IDEA详细配置和使用教程
+# IntelliJIDEA详细配置和使用教程
 
 正所谓工欲善其事必先利其器，对开发人员而言若想提高编码效率，一款高效的开发工具是必不可少的
 
@@ -8,7 +8,7 @@
 
 在`File->Settings->Editor->File Types`下的`"Ignore files and folders"`一栏添加`*.idea;*.iml;`等配置如下图所示
 
-![image-20210901161032320](images/IntelliJ IDEA详细配置和使用教程/image-20210901161032320.png)
+![image-20210901161032320](images/IntelliJIDEA详细配置和使用教程/image-20210901161032320.png)
 
 ## 禁止导入包.*的优化
 
@@ -20,11 +20,11 @@
 
 主题用的是IDEA自带的
 
-![image-20210902113416743](images/IntelliJ IDEA详细配置和使用教程/image-20210902113416743.png)
+![image-20210902113416743](images/IntelliJIDEA详细配置和使用教程/image-20210902113416743.png)
 
 字体设置
 
-![image-20210902113440645](image-20210902113440645.png)
+![image-20210902113416743](images/IntelliJIDEA详细配置和使用教程/image-20210902113440645.png)
 
 ## 配置创建类模板
 
@@ -58,7 +58,7 @@ public class ${NAME} {
 
 - 切换多个项目窗口
 
-    ![image-20210901180024760](images/IntelliJ IDEA详细配置和使用教程/image-20210901180024760.png)
+    ![image-20210901180024760](images/IntelliJIDEA详细配置和使用教程/image-20210901180024760.png)
 
 
 ## 插件相关
@@ -211,7 +211,7 @@ public class ${NAME} {
 
     代码格式化插件`Safe Action`，[插件地址](https://github.com/dubreuia/intellij-plugin-save-actions)。推荐配置如下图
 
-    ![image-20200312135908596](images/IntelliJ IDEA详细配置和使用教程/image-20200312135908596.png)
+    ![image-20200312135908596](images/IntelliJIDEA详细配置和使用教程/image-20200312135908596.png)
 
 - 热部署插件
 
