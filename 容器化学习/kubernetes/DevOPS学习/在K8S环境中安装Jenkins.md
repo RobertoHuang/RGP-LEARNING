@@ -1,3 +1,9 @@
+- 为了方便管理，我们将所有和`DevOps`相关的资源放在一个独立的`namespace`下
+
+    ```yaml
+    kubectl create namespace roberto-test
+    ```
+
 - 创建Service Account并绑定集群角色
 
     ```yaml
