@@ -67,10 +67,10 @@
             app: jenkins
         spec:
           terminationGracePeriodSeconds: 10
-          serviceAccount: jenkins
+          serviceAccount: jenkins-service-account
           containers:
           - name: jenkins
-            image: jenkins/jenkins:2.263.2
+            image: jenkins/jenkins:2.303.3
             imagePullPolicy: IfNotPresent
             ports:
             - containerPort: 8080
@@ -160,5 +160,16 @@
 
     其中`ingress`应用的秘钥部分为:`kubectl create secret tls tls-secret --cert=x.pem --key=x.key -n roberto-test`
 
-- 打开网页`devops.bestvetschool.com`查看网页是否访问正常。如果正常则表示Jenkins已安装成功
+- 打开网页`devops.bestvetschool.com`查看网页是否访问正常
 
+    `Jenkins`安装成功后打开`Jenkins`界面选择自定义插件方式安装(取消所有插件勾选，后续手动安装)
+
+- 安装完成后，可以选择汉化`Jenkins`
+
+    汉化`Jenkins`，安装如下两个插件
+
+    ![image-20200927160047817](images/在K8S环境中安装Jenkins/image-20200927160047817.png)
+
+    在系统配置下添加如下配置，重启`Jenkins`后即可显示中文了
+
+    ![image-20200927160214750](images/在K8S环境中安装Jenkins/image-20200927160214750.png)
