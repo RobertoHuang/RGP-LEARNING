@@ -30,9 +30,14 @@
   
   # 差异比对工具git difftool
   ```
-
+  
 - `Source Tree`的`diff`选项中可视化对比工具和合并工具选择`Beyond Compare`
 
+- 如果`Source Tree`不能正常打开`Beyond Compare`，可以尝试使用命令
+  
+  ```
+  sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+  ```
 ## Mac Beyond Compare破解
 
 - 首先下载`Beyond Compare`最新版本，链接如下[下载地址](https://www.scootersoftware.com/download.php)下载完成后，直接安装
