@@ -242,4 +242,4 @@ Java泛型里的通配符实现了程序语言里的协变和逆变
 
 当我们需要只读不写时就用协变，只写不读就用逆变。又想读又想写我们应该指明准确的泛型类型
 
-著名的PECS原则就总结了这一点，PECS（Prodcuer extends Consumer super），也就是说作为元素的生产者Prodcuer要用协变，支持元素的读取，而作为消费者Consumer要支持逆变，支持元素的写入
+著名的PECS原则就总结了这一点，PECS（Prodcuer extends Consumer super），也就是说作为元素的生产者Prodcuer要用协变，支持元素的读取，而作为元素的消费者Consumer要支持逆变，支持元素的写入
